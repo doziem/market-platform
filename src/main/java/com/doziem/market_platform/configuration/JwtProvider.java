@@ -2,8 +2,13 @@ package com.doziem.market_platform.configuration;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.Email;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -14,14 +19,15 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-@Service
+@Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
     SecretKey key = Keys.hmacShaKeyFor(JwtConstant.JWT_SECRET.getBytes());
 
-    public String generateToken(Authentication authentication) {
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+    public String generateToken( Authentication authentication) {
         String email = authentication.getName();
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String roles = populateAuthorities(authorities);
 
         return Jwts.builder()
