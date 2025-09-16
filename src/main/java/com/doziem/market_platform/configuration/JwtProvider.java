@@ -2,14 +2,10 @@ package com.doziem.market_platform.configuration;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
@@ -45,14 +41,6 @@ public class JwtProvider {
 
     public String getEmailFromToken(String token) {
         token = token.substring(7);
-
-//        Claims claims = Jwts.parser()
-//                .verifyWith(key)
-//                .build()
-//                .parseSignedClaims(token)
-//                .getPayload();
-//        String email = String.valueOf(claims.get("email"));
-//        return email;
 
         return String.valueOf(Jwts.parser()
                 .verifyWith(key)

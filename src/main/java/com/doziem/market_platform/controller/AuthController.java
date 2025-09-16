@@ -1,8 +1,8 @@
 package com.doziem.market_platform.controller;
 
 import com.doziem.market_platform.payload.dto.UserDto;
-import com.doziem.market_platform.payload.response.AuthResponse;
 import com.doziem.market_platform.service.AuthService;
+import com.doziem.market_platform.system.Result;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,14 +20,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody @Valid UserDto userDto) {
-        AuthResponse authResponse = authService.signup(userDto);
+    public ResponseEntity<Result> signup(@RequestBody @Valid UserDto userDto) {
+        Result authResponse = authService.signup(userDto);
         return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid UserDto userDto) {
-        AuthResponse authResponse = authService.login(userDto);
+    public ResponseEntity<Result> login(@RequestBody @Valid UserDto userDto) {
+        Result authResponse = authService.login(userDto);
         return ResponseEntity.status(HttpStatus.OK).body(authResponse);
     }
 }
