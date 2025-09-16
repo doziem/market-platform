@@ -43,9 +43,4 @@ public class User {
 
     private ZonedDateTime lastLogin;
 
-    public void PrePersist() {
-        this.createdAt = ZonedDateTime.now();
-        this.role = Role.ROLE_USER;
-    }
-
 }
