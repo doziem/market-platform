@@ -1,5 +1,6 @@
 package com.doziem.market_platform.service.impl;
 
+import com.doziem.market_platform.exception.UserException;
 import com.doziem.market_platform.model.User;
 import com.doziem.market_platform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ public class CustomUserImplementation implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = userRepository.findByEmail(username);
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(()->new UserException("User not found"));
         if(user ==null){
             throw  new UsernameNotFoundException("User not found");
         }

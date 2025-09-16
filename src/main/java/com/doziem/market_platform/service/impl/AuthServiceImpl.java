@@ -9,7 +9,9 @@ import com.doziem.market_platform.payload.dto.UserDto;
 import com.doziem.market_platform.payload.response.AuthResponse;
 import com.doziem.market_platform.repository.UserRepository;
 import com.doziem.market_platform.service.AuthService;
+import com.doziem.market_platform.system.Result;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -31,8 +34,11 @@ public class AuthServiceImpl implements AuthService {
     private final CustomUserImplementation customUser;
 
     @Override
-    public AuthResponse signup(UserDto userDto) {
-        User user = userRepository.findByEmail(userDto.getEmail());
+    public Result signup(UserDto userDto) {
+
+        try {
+
+        User user = userRepository.findByEmail(userDto.getEmail()).orElseThrow(()->new UserException("User not found"));
 
         if (user != null) {
             throw  new UserException("User with email " + userDto.getEmail() + " already exists");
@@ -59,16 +65,23 @@ public class AuthServiceImpl implements AuthService {
 
         AuthResponse authResponse = new AuthResponse();
 
-        authResponse.setMessage("User registered successfully");
         authResponse.setToken(token);
         authResponse.setUser(UserMapper.toDto(saveUser));
 
-        return authResponse;
+        return new Result(true, "Successfully Registered", authResponse);
+        }catch (Exception ex){
+            log.info("Internal Server Error :: {}",ex.getMessage());
+            throw  ex;
+        }
     }
 
     @Override
-    public AuthResponse login(UserDto userDto) {
-        User user = userRepository.findByEmail(userDto.getEmail());
+    public Result login(UserDto userDto) {
+        try {
+
+
+        User user = userRepository.findByEmail(userDto.getEmail())
+                .orElseThrow(()->new UserException("User not found"));
 
         Authentication auth = authenticate(userDto, user);
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -83,11 +96,14 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         AuthResponse authResponse = new AuthResponse();
-        authResponse.setMessage("User logged in successfully");
         authResponse.setToken(token);
         authResponse.setUser(UserMapper.toDto(user));
-        return authResponse;
 
+        return new Result(true,"Successful", authResponse);
+        }catch (Exception ex){
+            log.info("Internal Server Error ::: {}",ex.getMessage());
+            throw  ex;
+        }
     }
 
     private Authentication authenticate(UserDto dto, User user) {
