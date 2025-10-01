@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -32,31 +33,24 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final CustomUserImplementation customUser;
+    private final UserMapper userMapper;
 
     @Override
     public Result signup(UserDto userDto) {
 
         try {
 
-        User user = userRepository.findByEmail(userDto.getEmail()).orElseThrow(()->new UserException("User not found"));
+        Optional<User> user = userRepository.findByEmail(userDto.getEmail());
 
-        if (user != null) {
+        if (user.isPresent()) {
             throw  new UserException("User with email " + userDto.getEmail() + " already exists");
         }
-
         validateUser(userDto);
+        User convertedUser = UserMapper.toEntity(userDto);
 
-        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user = new User();
-        user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());
-        user.setRole(userDto.getRole());
-        user.setPhoneNumber(userDto.getPhoneNumber());
-        user.setUpdatedAt(ZonedDateTime.now());
-        user.setCreatedAt(ZonedDateTime.now());
-        user.setLastLogin(ZonedDateTime.now());
+        convertedUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-       User saveUser = userRepository.save(user);
+       User saveUser = userRepository.save(convertedUser);
 
         Authentication authentication =new   UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword());
 
@@ -79,7 +73,6 @@ public class AuthServiceImpl implements AuthService {
     public Result login(UserDto userDto) {
         try {
 
-
         User user = userRepository.findByEmail(userDto.getEmail())
                 .orElseThrow(()->new UserException("User not found"));
 
@@ -92,6 +85,7 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtProvider.generateToken(auth);
 
+//        user.setRole(Role.valueOf(roles));
         user.setLastLogin(ZonedDateTime.now());
         userRepository.save(user);
 

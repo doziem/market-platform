@@ -1,5 +1,6 @@
 package com.doziem.market_platform.configuration;
 
+import com.doziem.market_platform.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,11 +23,13 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final   JwtValidator jwtValidator;
+    private final UserRepository userRepository;
 
-    public SecurityConfig(JwtValidator jwtValidator) {
-        this.jwtValidator = new JwtValidator();
+    public SecurityConfig(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -37,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/super-admin**")
                         .hasRole("ADMIN")
                         .anyRequest().permitAll()
-                ).addFilterBefore(jwtValidator, BasicAuthenticationFilter.class)
+                ).addFilterBefore(jwtValidator(), BasicAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cor->cor.configurationSource(corsConfigurationSource()))
                 .build();
@@ -64,5 +67,10 @@ public class SecurityConfig {
                 return config;
             }
         };
+    }
+
+    @Bean
+    public JwtValidator jwtValidator() {
+        return new JwtValidator(userRepository);
     }
 }
