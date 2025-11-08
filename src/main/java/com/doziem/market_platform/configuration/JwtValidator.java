@@ -1,5 +1,8 @@
 package com.doziem.market_platform.configuration;
 
+import com.doziem.market_platform.model.User;
+import com.doziem.market_platform.repository.UserRepository;
+import com.doziem.market_platform.service.impl.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -9,13 +12,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,6 +29,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class JwtValidator extends OncePerRequestFilter {
+
+    private final UserRepository userRepository;
 
 
     @Override
@@ -51,7 +56,13 @@ public class JwtValidator extends OncePerRequestFilter {
                 String authorities = String.valueOf(claims.get("authorities"));
                 List<GrantedAuthority> auth = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
-                 Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, auth);
+
+                User user = userRepository.findByEmail(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+                UserPrincipal userPrincipal = new UserPrincipal(user, auth);
+
+                 Authentication authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, auth);
 
                  SecurityContextHolder.getContext().setAuthentication(authentication);
 

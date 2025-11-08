@@ -3,12 +3,13 @@ package com.doziem.market_platform.model;
 import com.doziem.market_platform.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -17,15 +18,23 @@ import static jakarta.persistence.EnumType.STRING;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "user-service")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String  userId;
+    private String userId;
+
     @Column(unique = true, nullable = false)
-    @Email(message = "Provide a valid Email")
+    @Email(message = "Provide a valid email")
     private String email;
+
+    @Column(nullable = false)
+    private String displayName;
+
+    @Column(unique = true, nullable = false,length = 12)
+    private String username;
 
     @Column(nullable = false)
     private String password;
@@ -34,7 +43,8 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    private String  phoneNumber;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Store> stores = new ArrayList<>();
 
     @Column(nullable = false)
     private ZonedDateTime createdAt;
@@ -42,5 +52,12 @@ public class User {
     private ZonedDateTime updatedAt;
 
     private ZonedDateTime lastLogin;
+
+    @PrePersist
+    protected void onCreate() {
+        if (userId == null) {
+            userId = UUID.randomUUID().toString();
+        }
+    }
 
 }
