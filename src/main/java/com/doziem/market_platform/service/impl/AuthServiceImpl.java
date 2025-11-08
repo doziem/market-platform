@@ -2,6 +2,7 @@ package com.doziem.market_platform.service.impl;
 
 import com.doziem.market_platform.configuration.JwtProvider;
 import com.doziem.market_platform.enums.Role;
+import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.exception.UserException;
 import com.doziem.market_platform.mapper.UserMapper;
 import com.doziem.market_platform.model.User;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -32,53 +34,47 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final CustomUserImplementation customUser;
+    private final UserMapper userMapper;
+    private final UsernameService usernameService;
 
     @Override
     public Result signup(UserDto userDto) {
 
         try {
 
-        User user = userRepository.findByEmail(userDto.getEmail()).orElseThrow(()->new UserException("User not found"));
+        Optional<User> user = userRepository.findByEmail(userDto.getEmail());
 
-        if (user != null) {
+        if (user.isPresent()) {
             throw  new UserException("User with email " + userDto.getEmail() + " already exists");
         }
-
         validateUser(userDto);
+        User convertedUser = UserMapper.toEntity(userDto);
+            String username = usernameService.autoGenerateUsername(userDto.getDisplayName(), userDto.getEmail());
+        convertedUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user = new User();
-        user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword());
-        user.setRole(userDto.getRole());
-        user.setPhoneNumber(userDto.getPhoneNumber());
-        user.setUpdatedAt(ZonedDateTime.now());
-        user.setCreatedAt(ZonedDateTime.now());
-        user.setLastLogin(ZonedDateTime.now());
-
-       User saveUser = userRepository.save(user);
+        convertedUser.setUsername(username);
+       User saveUser = userRepository.save(convertedUser);
 
         Authentication authentication =new   UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtProvider.generateToken(authentication);
+        String token = jwtProvider.generateToken(authentication,username);
 
         AuthResponse authResponse = new AuthResponse();
 
-        authResponse.setToken(token);
+//        authResponse.setToken(token);
         authResponse.setUser(UserMapper.toDto(saveUser));
 
         return new Result(true, "Successfully Registered", authResponse);
         }catch (Exception ex){
             log.info("Internal Server Error :: {}",ex.getMessage());
-            throw  ex;
+            throw new CustomException("Error Registering user");
         }
     }
 
     @Override
     public Result login(UserDto userDto) {
         try {
-
 
         User user = userRepository.findByEmail(userDto.getEmail())
                 .orElseThrow(()->new UserException("User not found"));
@@ -90,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
 
         String roles = authorities.iterator().next().getAuthority();
 
-        String token = jwtProvider.generateToken(auth);
+        String token = jwtProvider.generateToken(auth, user.getUsername());
 
         user.setLastLogin(ZonedDateTime.now());
         userRepository.save(user);
@@ -100,9 +96,9 @@ public class AuthServiceImpl implements AuthService {
         authResponse.setUser(UserMapper.toDto(user));
 
         return new Result(true,"Successful", authResponse);
-        }catch (Exception ex){
+        }catch (CustomException ex){
             log.info("Internal Server Error ::: {}",ex.getMessage());
-            throw  ex;
+            throw  new CustomException("Error during login");
         }
     }
 

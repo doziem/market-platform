@@ -8,6 +8,6 @@ public interface UserService {
     UserDto getUserFromToken(String token);
     UserDto getCurrentUser();
     UserDto getCurrentUserByEmail(String email);
-    UserDto getUSerByUserId(String userId);
+    UserDto getUserByUserId(String userId);
     List<UserDto> getAllUsers();
 }
