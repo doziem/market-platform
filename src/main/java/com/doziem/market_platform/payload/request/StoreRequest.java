@@ -29,10 +29,7 @@ public class StoreRequest {
     private UserDto userDto;
 
     @NotBlank
-    @Pattern(
-            regexp = "^\\+?[0-9]{7,15}$",
-            message = "Phone number must be 7–15 digits and may start with +"
-    )
+    @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "Phone number must be 7–15 digits and may start with +")
     private String phoneNumber;
 
     @NotBlank

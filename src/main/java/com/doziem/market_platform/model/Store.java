@@ -3,9 +3,10 @@ package com.doziem.market_platform.model;
 import com.doziem.market_platform.enums.StoreStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Setter
@@ -22,8 +23,8 @@ public class Store {
 
     private String storeName;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;
 
     private String storeType;
@@ -49,6 +50,12 @@ public class Store {
 
     private String countryCode;
     private String iso;
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Product> products = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
+    private List<StoreBranch> storeBranches = new ArrayList<>();
 
     @Embedded
     @AttributeOverrides({

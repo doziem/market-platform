@@ -21,7 +21,7 @@ public class JwtProvider {
 
     SecretKey key = Keys.hmacShaKeyFor(JwtConstant.JWT_SECRET.getBytes());
 
-    public String generateToken( Authentication authentication) {
+    public String generateToken(Authentication authentication,String  username) {
         String email = authentication.getName();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String roles = populateAuthorities(authorities);
@@ -34,6 +34,7 @@ public class JwtProvider {
                         .atZone(ZoneId.systemDefault())
                         .toInstant()))
                 .claim("email", email)
+                .claim("username", username)
                 .claim("authorities", roles)
                 .signWith(key)
                 .compact();
@@ -48,6 +49,18 @@ public class JwtProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("email"));
+
+    }
+
+    public String getUsernameFromToken(String token) {
+        token = token.substring(7);
+
+        return String.valueOf(Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("username"));
 
     }
 

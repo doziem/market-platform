@@ -4,6 +4,8 @@ import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.mapper.StoreMapper;
 import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.model.User;
+import com.doziem.market_platform.payload.dto.UserDto;
+import com.doziem.market_platform.payload.dto.WorkHourDto;
 import com.doziem.market_platform.payload.request.StoreRequest;
 import com.doziem.market_platform.payload.response.StoreResponse;
 import com.doziem.market_platform.repository.StoreRepository;
@@ -44,13 +46,20 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public Store getStoreByStoreId(String storeId) {
-        return  storeRepository.findById(storeId).orElseThrow(()->new CustomException("Store not found"));
+    public StoreResponse getStoreByStoreId(String storeId) {
+        Store singleStore = storeRepository.findById(storeId).orElseThrow(()->new CustomException("Store not found"));
+        return  StoreMapper.storeResponse(singleStore);
      }
 
     @Override
     public List<StoreResponse> getAllStores() {
-        return  storeRepository.findAll().stream().map(StoreMapper::storeResponse).toList();
+        try {
+           return storeRepository.findAll().stream().map(StoreMapper::storeResponse).toList();
+        }catch (CustomException ex){
+//            log("Error {}", ex.getMessage());
+            throw new CustomException("Error Fetching Stores");
+        }
+
     }
 
     @Override

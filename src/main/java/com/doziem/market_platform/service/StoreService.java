@@ -12,7 +12,7 @@ import java.util.List;
 public interface StoreService {
 
     Result createStore(StoreRequest storeRequest, UserPrincipal userPrincipal) throws IOException;
-    Store getStoreByStoreId(String storeId);
+    StoreResponse getStoreByStoreId(String storeId);
     List<StoreResponse> getAllStores();
     Store getStoreByAdmin();
     StoreRequest updateStore(String storeId, StoreRequest storeRequest);

@@ -28,6 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<maven.compiler.release>21</maven.compiler.release>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -107,29 +110,19 @@
 
 	<build>
 		<plugins>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-<!--				<configuration>-->
-<!--					<annotationProcessorPaths>-->
-<!--						<path>-->
-<!--							<groupId>org.projectlombok</groupId>-->
-<!--							<artifactId>lombok</artifactId>-->
-<!--						</path>-->
-<!--					</annotationProcessorPaths>-->
-<!--				</configuration>-->
+				<version>3.11.0</version>
+				<configuration>
+					<release>21</release>
+				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-<!--				<configuration>-->
-<!--					<excludes>-->
-<!--						<exclude>-->
-<!--							<groupId>org.projectlombok</groupId>-->
-<!--							<artifactId>lombok</artifactId>-->
-<!--						</exclude>-->
-<!--					</excludes>-->
-<!--				</configuration>-->
 			</plugin>
 		</plugins>
 	</build>

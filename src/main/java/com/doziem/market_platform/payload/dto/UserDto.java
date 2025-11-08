@@ -19,6 +19,10 @@ public class UserDto {
     @JsonProperty(access = WRITE_ONLY)
     private String password;
 
+    private String displayName;
+
+    private String username;
+
     private Role role;
 
     private ZonedDateTime createdAt;
