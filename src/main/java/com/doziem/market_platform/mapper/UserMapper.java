@@ -16,7 +16,10 @@ public class UserMapper {
             return null;
         }
         return UserDto.builder()
+                .userId(user.getUserId())
                 .email(user.getEmail())
+                .displayName(user.getDisplayName())
+                .username(user.getUsername())
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
@@ -31,6 +34,8 @@ public class UserMapper {
 
         return User.builder()
                 .email(dto.getEmail())
+                .displayName(dto.getDisplayName())
+                .username(dto.getUsername())
                 .role(dto.getRole())
                 .createdAt(ZonedDateTime.now())
                 .updatedAt(ZonedDateTime.now())

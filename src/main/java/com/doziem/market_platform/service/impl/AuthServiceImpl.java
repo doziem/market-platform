@@ -2,6 +2,7 @@ package com.doziem.market_platform.service.impl;
 
 import com.doziem.market_platform.configuration.JwtProvider;
 import com.doziem.market_platform.enums.Role;
+import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.exception.UserException;
 import com.doziem.market_platform.mapper.UserMapper;
 import com.doziem.market_platform.model.User;
@@ -34,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtProvider jwtProvider;
     private final CustomUserImplementation customUser;
     private final UserMapper userMapper;
+    private final UsernameService usernameService;
 
     @Override
     public Result signup(UserDto userDto) {
@@ -47,25 +49,26 @@ public class AuthServiceImpl implements AuthService {
         }
         validateUser(userDto);
         User convertedUser = UserMapper.toEntity(userDto);
-
+            String username = usernameService.autoGenerateUsername(userDto.getDisplayName(), userDto.getEmail());
         convertedUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
+        convertedUser.setUsername(username);
        User saveUser = userRepository.save(convertedUser);
 
         Authentication authentication =new   UsernamePasswordAuthenticationToken(userDto.getEmail(), userDto.getPassword());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtProvider.generateToken(authentication);
+        String token = jwtProvider.generateToken(authentication,username);
 
         AuthResponse authResponse = new AuthResponse();
 
-        authResponse.setToken(token);
+//        authResponse.setToken(token);
         authResponse.setUser(UserMapper.toDto(saveUser));
 
         return new Result(true, "Successfully Registered", authResponse);
         }catch (Exception ex){
             log.info("Internal Server Error :: {}",ex.getMessage());
-            throw  ex;
+            throw new CustomException("Error Registering user");
         }
     }
 
@@ -83,9 +86,8 @@ public class AuthServiceImpl implements AuthService {
 
         String roles = authorities.iterator().next().getAuthority();
 
-        String token = jwtProvider.generateToken(auth);
+        String token = jwtProvider.generateToken(auth, user.getUsername());
 
-//        user.setRole(Role.valueOf(roles));
         user.setLastLogin(ZonedDateTime.now());
         userRepository.save(user);
 
@@ -94,9 +96,9 @@ public class AuthServiceImpl implements AuthService {
         authResponse.setUser(UserMapper.toDto(user));
 
         return new Result(true,"Successful", authResponse);
-        }catch (Exception ex){
+        }catch (CustomException ex){
             log.info("Internal Server Error ::: {}",ex.getMessage());
-            throw  ex;
+            throw  new CustomException("Error during login");
         }
     }
 
