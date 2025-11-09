@@ -50,6 +50,8 @@ public class StoreRequest {
     private String countryCode;
     private String iso;
 
+    private boolean isHeadQuarter ;
+
     private WorkHourDto weekday;
     private WorkHourDto saturday;
     private WorkHourDto sunday;

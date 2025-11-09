@@ -46,6 +46,8 @@ public class StoreResponse {
     private String countryCode;
     private String iso;
 
+    private boolean isHeadQuarter;
+
     private List<Product> products = new ArrayList<>();
 
     private List<StoreBranchResponse> storeBranches = new ArrayList<>();

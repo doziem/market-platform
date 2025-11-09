@@ -25,6 +25,8 @@ public class UserDto {
 
     private Role role;
 
+    private boolean isVerify;
+
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;
