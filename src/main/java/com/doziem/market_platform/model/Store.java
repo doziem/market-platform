@@ -51,6 +51,8 @@ public class Store {
     private String countryCode;
     private String iso;
 
+    private boolean isHeadQuarter = false;
+
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
 

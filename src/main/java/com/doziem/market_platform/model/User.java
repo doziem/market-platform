@@ -43,6 +43,8 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    private boolean isVerify;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Store> stores = new ArrayList<>();
 

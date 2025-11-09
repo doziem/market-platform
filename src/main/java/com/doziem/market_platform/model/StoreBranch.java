@@ -40,6 +40,10 @@ public class StoreBranch {
 
     private boolean mainBranch = false;
 
+    @ManyToOne
+    @JoinColumn(name = "state_warehouse_id")
+    private StateWarehouse stateWarehouse;
+
     @PrePersist
     protected void onCreate() {
         if (branchId == null) {
