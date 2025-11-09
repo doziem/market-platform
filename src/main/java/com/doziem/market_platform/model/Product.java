@@ -1,12 +1,9 @@
 package com.doziem.market_platform.model;
 
-import com.doziem.market_platform.enums.StoreStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Setter
@@ -36,6 +33,18 @@ public class Product {
     private String brand;
 
     private String image;
+
+    private double unitPrice;
+
+    private int quantityInStock;
+
+    private int reorderLevel;
+
+    @ManyToOne
+    private CentralWarehouse centralWarehouse;
+
+    @ManyToOne
+    private StateWarehouse stateWarehouse;
 
     private ZonedDateTime createdAt;
 

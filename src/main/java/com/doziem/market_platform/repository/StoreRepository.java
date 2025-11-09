@@ -1,5 +1,6 @@
 package com.doziem.market_platform.repository;
 
+import com.doziem.market_platform.model.CentralWarehouse;
 import com.doziem.market_platform.model.Store;
 import org.springframework.data.jpa.repository.JpaRepository;
 
