@@ -1,6 +1,7 @@
 package com.doziem.market_platform.payload.dto;
 
 import com.doziem.market_platform.enums.Role;
+import com.doziem.market_platform.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class UserDto {
 
     private boolean isVerify;
 
+    private User managerName;
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;

@@ -25,13 +25,13 @@ public class CentralWarehouseMapper {
         if (warehouse == null) {
             return null;
         }
-
         return CentralWarehouseDto.builder()
                 .centralWarehouseId(warehouse.getCentralWarehouseId())
                 .name(warehouse.getName())
                 .address(warehouse.getAddress())
                 .city(warehouse.getCity())
                 .state(warehouse.getState())
+                .storeRequest(StoreMapper.toDto(warehouse.getStore()))
                 .country(warehouse.getCountry())
                 .build();
     }

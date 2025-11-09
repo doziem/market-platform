@@ -64,7 +64,8 @@ public class CentralWarehouseServiceImpl implements CentralWarehouseService {
 
         try {
 
-            CentralWarehouse existingWarehouse = centralWarehouseRepository.findById(centralWarehouseId)
+            CentralWarehouse existingWarehouse = centralWarehouseRepository
+                    .findById(centralWarehouseId)
                     .orElseThrow(() -> new CustomException("Central Warehouse not found"));
 
             existingWarehouse.setName(dto.getName() != null ? dto.getName() : existingWarehouse.getName());
