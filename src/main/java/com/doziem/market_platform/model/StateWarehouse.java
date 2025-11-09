@@ -18,8 +18,11 @@ public class StateWarehouse {
 
     private String name;
     private String address;
+    private String city;
     private String state;
-    private String managerName;
+
+    @OneToOne
+    private User managerName;
 
     @OneToOne
     @JoinColumn(name = "main_branch_id")
