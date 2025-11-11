@@ -44,6 +44,31 @@ public class StoreBranch {
     @JoinColumn(name = "state_warehouse_id")
     private StateWarehouse stateWarehouse;
 
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="openTime", column=@Column(name="saturday_openTime")),
+            @AttributeOverride(name="closeTime", column=@Column(name="saturday_closeTime")),
+
+    })
+    private WorkHour saturday;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="openTime", column=@Column(name="sunday_openTime")),
+            @AttributeOverride(name="closeTime", column=@Column(name="sunday_closeTime")),
+
+    })
+    private WorkHour sunday;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="openTime", column=@Column(name="weekday_openTime")),
+            @AttributeOverride(name="closeTime", column=@Column(name="weekday_closeTime")),
+
+    })
+    private WorkHour weekday;
+
     @PrePersist
     protected void onCreate() {
         if (branchId == null) {
