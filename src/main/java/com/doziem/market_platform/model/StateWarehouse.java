@@ -1,7 +1,11 @@
 package com.doziem.market_platform.model;
 
+import com.doziem.market_platform.model.staff.Staff;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -22,7 +26,10 @@ public class StateWarehouse {
     private String state;
 
     @OneToOne
-    private User managerName;
+    private Staff managerName;
+
+    @OneToMany(mappedBy = "stateWarehouse")
+    private List<Product> products = new ArrayList<>();
 
     @OneToOne
     @JoinColumn(name = "main_branch_id")

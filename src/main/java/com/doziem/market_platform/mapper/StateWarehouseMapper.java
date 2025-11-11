@@ -23,13 +23,14 @@ public class StateWarehouseMapper {
         if (stateWarehouse == null) {
             return null;
         }
+        String  managerName = stateWarehouse.getManagerName().getFirstName() + " " + stateWarehouse.getManagerName().getLastName();
         return StateWarehouseDto.builder()
                 .stateWarehouseId(stateWarehouse.getStateWarehouseId())
                 .name(stateWarehouse.getName())
                 .address(stateWarehouse.getAddress())
                 .city(stateWarehouse.getCity())
                 .state(stateWarehouse.getState())
-                .branchManagerName(stateWarehouse.getManagerName().getDisplayName())
+                .branchManagerName(managerName)
                 .mainBranch(stateWarehouse.getMainBranch())
                 .centralWarehouse(stateWarehouse.getCentralWarehouse())
                 .build();

@@ -1,5 +1,6 @@
 package com.doziem.market_platform.payload.request;
 
+import com.doziem.market_platform.payload.dto.WorkHourDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -24,7 +25,13 @@ public record StoreBranchRequest(
                 message = "Phone number must be valid")
         String phoneNumber,
 
-        boolean mainBranch
+        boolean mainBranch,
+
+         WorkHourDto weekday,
+
+          WorkHourDto saturday,
+
+          WorkHourDto sunday
 ) {
 }
 
