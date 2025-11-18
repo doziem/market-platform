@@ -3,7 +3,10 @@ package com.doziem.market_platform.model.staff;
 import com.doziem.market_platform.model.StoreBranch;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,19 +21,20 @@ public class HumanResource {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String  humanResourceId;
 
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "staff_id")
-    private Staff staff;
+    private List<Staff> staff = new ArrayList<>();
 
-    @OneToMany(mappedBy = "humanResource", cascade = CascadeType.ALL)
-    private List<Department> departments;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "humanResource", cascade = CascadeType.ALL)
+    private List<Department> departments = new ArrayList<>();
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "branch_id")
     private StoreBranch branch;
 
-    private String roleTitle ;
+    private String roleTitle;
 
-    private boolean active = true;
+    private boolean active;
 }
 

@@ -3,7 +3,6 @@ package com.doziem.market_platform.service.staff;
 import com.doziem.market_platform.enums.EmploymentStatus;
 import com.doziem.market_platform.enums.Role;
 import com.doziem.market_platform.exception.CustomException;
-import com.doziem.market_platform.mapper.DepartmentMapper;
 import com.doziem.market_platform.mapper.StaffMapper;
 import com.doziem.market_platform.model.StoreBranch;
 import com.doziem.market_platform.model.User;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,11 +47,11 @@ public class StaffServiceImpl implements StaffService{
         StoreBranch branch = branchRepository.findById(request.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
 
-        if(!user.getRole().equals(Role.HR_ADMIN)){
-            throw new CustomException("Only HR Admin can create Staff");
-        }
+//        if(!user.getRole().equals(Role.HR_ADMIN)){
+//            throw new CustomException("Only HR Admin can create Staff");
+//        }
 
-        staff.setUserAccount(user);
+        staff.setUser(user);
 
         staff.setDepartment(department);
 
@@ -76,7 +74,7 @@ public class StaffServiceImpl implements StaffService{
         if (request.getUserId() != null) {
             User user = userRepository.findById(request.getUserId())
                     .orElseThrow(() -> new CustomException("User not found"));
-            staff.setUserAccount(user);
+            staff.setUser(user);
         }
 
         if (request.getDepartmentId() != null) {
@@ -136,8 +134,8 @@ public class StaffServiceImpl implements StaffService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<StaffResponse> findByDepartment(Department department) {
-        List<Staff> results = staffRepository.findByDepartment(department);
+    public List<StaffResponse> findByDepartment(String departmentId) {
+        List<Staff> results = staffRepository.findByDepartment(departmentId);
         return StaffMapper.toResponseList(results);
     }
 

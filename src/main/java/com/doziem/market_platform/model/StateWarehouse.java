@@ -25,17 +25,17 @@ public class StateWarehouse {
     private String city;
     private String state;
 
-    @OneToOne
-    private Staff managerName;
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<Staff> staffList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "stateWarehouse")
+    @OneToMany (fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "stateWarehouse")
     private List<Product> products = new ArrayList<>();
 
-    @OneToOne
-    @JoinColumn(name = "main_branch_id")
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "branch_id")
     private StoreBranch mainBranch;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "central_warehouse_id")
     private CentralWarehouse centralWarehouse;
 }
