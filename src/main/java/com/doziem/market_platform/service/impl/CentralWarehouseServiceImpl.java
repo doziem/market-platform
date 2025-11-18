@@ -7,7 +7,6 @@ import com.doziem.market_platform.payload.dto.CentralWarehouseDto;
 import com.doziem.market_platform.payload.response.StoreResponse;
 import com.doziem.market_platform.repository.CentralWarehouseRepository;
 import com.doziem.market_platform.repository.StoreRepository;
-import com.doziem.market_platform.service.StoreService;
 import com.doziem.market_platform.system.Result;
 
 import  com.doziem.market_platform.service.CentralWarehouseService;
@@ -29,15 +28,14 @@ public class CentralWarehouseServiceImpl implements CentralWarehouseService {
 
     @Override
     public Result createCentralWarehouse(String storeId, CentralWarehouseDto dto) {
-        StoreResponse store = storeService.getStoreByStoreId(storeId);
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new CustomException("Store not found"));
 
         if(!store.isHeadQuarter()) {
             log.info("Store {} is not Head Quarter, cannot create central warehouse", store.getStoreName());
             throw  new CustomException( "Only Head Quarter store can create central warehouse");
         }
 
-        CentralWarehouse centralWarehouse = centralWarehouseMapper.toEntity(dto, Store.builder()
-                .storeId(storeId).build());
+        CentralWarehouse centralWarehouse = centralWarehouseMapper.toEntity(dto, store);
         CentralWarehouse savedWarehouse = centralWarehouseRepository.save(centralWarehouse);
 
         CentralWarehouseDto warehouseDto = CentralWarehouseMapper.toDto(savedWarehouse);
@@ -68,7 +66,7 @@ public class CentralWarehouseServiceImpl implements CentralWarehouseService {
                     .findById(centralWarehouseId)
                     .orElseThrow(() -> new CustomException("Central Warehouse not found"));
 
-            existingWarehouse.setName(dto.getName() != null ? dto.getName() : existingWarehouse.getName());
+            existingWarehouse.setWarehouseName(dto.getWarehouseName() != null ? dto.getWarehouseName() : existingWarehouse.getWarehouseName());
             existingWarehouse.setAddress(dto.getAddress() != null ? dto.getAddress() : existingWarehouse.getAddress());
             existingWarehouse.setCity(dto.getCity() != null ? dto.getCity() : existingWarehouse.getCity());
             existingWarehouse.setState(dto.getState() != null ? dto.getState() : existingWarehouse.getState());

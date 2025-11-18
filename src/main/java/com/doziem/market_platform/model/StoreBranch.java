@@ -25,7 +25,7 @@ public class StoreBranch {
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
+    @Column(nullable  = false)
     private String city;
 
     private String state;
@@ -43,6 +43,31 @@ public class StoreBranch {
     @ManyToOne
     @JoinColumn(name = "state_warehouse_id")
     private StateWarehouse stateWarehouse;
+
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="openTime", column=@Column(name="saturday_openTime")),
+            @AttributeOverride(name="closeTime", column=@Column(name="saturday_closeTime")),
+
+    })
+    private WorkHour saturday;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="openTime", column=@Column(name="sunday_openTime")),
+            @AttributeOverride(name="closeTime", column=@Column(name="sunday_closeTime")),
+
+    })
+    private WorkHour sunday;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="openTime", column=@Column(name="weekday_openTime")),
+            @AttributeOverride(name="closeTime", column=@Column(name="weekday_closeTime")),
+
+    })
+    private WorkHour weekday;
 
     @PrePersist
     protected void onCreate() {

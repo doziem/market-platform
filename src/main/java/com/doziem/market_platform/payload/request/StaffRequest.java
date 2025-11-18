@@ -1,32 +1,26 @@
-package com.doziem.market_platform.payload.response;
+package com.doziem.market_platform.payload.request;
 
 import com.doziem.market_platform.enums.EmploymentStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
+
+import lombok.*;
+
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StaffResponse {
-
-    private String staffId;
+public class StaffRequest {
     private String firstName;
     private String lastName;
     private String position;
     private ZonedDateTime hireDate;
     private String rank;
     private String roleTitle;
+    private String userId;
+    private String departmentId;
+    private String branchId;
     private EmploymentStatus status;
     private boolean active;
-    private String userId;
-    private String userEmail;
-    private String departmentId;
-    private String departmentName;
-    private String branchId;
-    private String branchName;
 }

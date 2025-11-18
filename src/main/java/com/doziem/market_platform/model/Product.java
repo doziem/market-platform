@@ -40,12 +40,6 @@ public class Product {
 
     private int reorderLevel;
 
-    @ManyToOne
-    private CentralWarehouse centralWarehouse;
-
-    @ManyToOne
-    private StateWarehouse stateWarehouse;
-
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;
@@ -65,7 +59,17 @@ public class Product {
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id",referencedColumnName = "storeId", nullable = false)
+    @JoinColumn(name = "central_warehouse_id", referencedColumnName = "centralWarehouseId", nullable = false)
+    private CentralWarehouse centralWarehouse;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_warehouse_id", referencedColumnName = "stateWarehouseId")
+    private StateWarehouse stateWarehouse;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", referencedColumnName = "storeId", nullable = false)
     private Store store;
+
+
 
 }

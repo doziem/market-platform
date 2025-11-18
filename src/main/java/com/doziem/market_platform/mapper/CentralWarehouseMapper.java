@@ -5,14 +5,28 @@ import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.model.StoreBranch;
 import com.doziem.market_platform.payload.dto.CentralWarehouseDto;
 import com.doziem.market_platform.payload.request.StoreBranchRequest;
+import com.doziem.market_platform.payload.response.CentralWarehouseResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CentralWarehouseMapper {
 
+
+    public static CentralWarehouseResponse toResponse(CentralWarehouse centralWarehouse) {
+        return CentralWarehouseResponse.builder()
+                .centralWarehouseId(centralWarehouse.getCentralWarehouseId())
+                .warehouseName(centralWarehouse.getWarehouseName())
+                .address(centralWarehouse.getAddress())
+                .city(centralWarehouse.getCity())
+                .state(centralWarehouse.getState())
+                .country(centralWarehouse.getCountry())
+                .storeResponse(StoreMapper.storeResponse(centralWarehouse.getStore()))
+                .build();
+    }
+
     public CentralWarehouse toEntity(CentralWarehouseDto dto, Store store) {
         return CentralWarehouse.builder()
-                .name(dto.getName())
+                .warehouseName(dto.getWarehouseName())
                 .address(dto.getAddress())
                 .city(dto.getCity())
                 .state(dto.getState())
@@ -27,11 +41,11 @@ public class CentralWarehouseMapper {
         }
         return CentralWarehouseDto.builder()
                 .centralWarehouseId(warehouse.getCentralWarehouseId())
-                .name(warehouse.getName())
+                .warehouseName(warehouse.getWarehouseName())
                 .address(warehouse.getAddress())
                 .city(warehouse.getCity())
                 .state(warehouse.getState())
-                .storeRequest(StoreMapper.toDto(warehouse.getStore()))
+                .storeId(warehouse.getStore() != null ? warehouse.getStore().getStoreId() : null)
                 .country(warehouse.getCountry())
                 .build();
     }

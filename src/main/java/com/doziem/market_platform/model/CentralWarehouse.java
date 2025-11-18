@@ -1,5 +1,6 @@
 package com.doziem.market_platform.model;
 
+import com.doziem.market_platform.enums.WarehouseType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,12 +16,13 @@ public class CentralWarehouse {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String  centralWarehouseId;
-    private String name;
+    private String warehouseName;
     private String address;
     private String city;
     private String state;
     private String country;
 
-    @OneToOne
-    private Store store;;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "store_id")
+    private Store store;
 }
