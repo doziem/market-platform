@@ -25,7 +25,7 @@ public class StoreBranch {
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
+    @Column(nullable  = false)
     private String city;
 
     private String state;

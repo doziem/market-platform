@@ -1,6 +1,7 @@
 package com.doziem.market_platform.model.staff;
 
 import com.doziem.market_platform.enums.EmploymentStatus;
+import com.doziem.market_platform.model.StateWarehouse;
 import com.doziem.market_platform.model.StoreBranch;
 import com.doziem.market_platform.model.User;
 import jakarta.persistence.*;
@@ -21,6 +22,7 @@ import java.time.ZonedDateTime;
 public class Staff {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "staff_id")
     private String staffId;
 
     private String firstName;
@@ -31,24 +33,31 @@ public class Staff {
     @Size(min = 2, message = "Job title must have at least 2 characters")
     private String roleTitle ;
 
-    @OneToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @NotNull(message = "User is required")
-    private User userAccount;
-
-    @ManyToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Department department;
-
-
-    @ManyToOne
-    @JoinColumn(name = "branch_id")
-    @NotNull(message = "Branch is required")
-    private StoreBranch branch;
-
     @Enumerated(EnumType.STRING)
     private EmploymentStatus status;
 
     private boolean active;
+
+    @OneToOne(optional = false,  fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @NotNull(message = "User is required")
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private StoreBranch branch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_warehouse_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private StateWarehouse stateWarehouse;
+
 
 }

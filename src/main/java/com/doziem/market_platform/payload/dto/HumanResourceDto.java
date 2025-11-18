@@ -15,7 +15,7 @@ public class HumanResourceDto {
     private String  humanResourceId;
 
     @NotBlank(message = "Staff information is required")
-    private Staff staff;
+    private List<Staff> staffList ;
 
     @NotBlank(message = "At least one department is required")
     private List<DepartmentDto> departments;

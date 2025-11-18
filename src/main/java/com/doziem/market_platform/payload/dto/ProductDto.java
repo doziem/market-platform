@@ -13,27 +13,20 @@ import java.time.ZonedDateTime;
 @Builder
 public class ProductDto {
 
-    private String  productId;
-
     private String productName;
-
     private String sku;
-
     private String description;
 
     private Double mrp;
-
     private Double sellingPrice;
-
     private String brand;
-
     private String image;
+    private double unitPrice;
+    private int quantityInStock;
+    private int reorderLevel;
 
-    private ZonedDateTime createdAt;
-
-    private ZonedDateTime updatedAt;
-
-    private Category category;
-
-    private StoreRequest store;
+    private String categoryId;
+    private String centralWarehouseId;
+    private String stateWarehouseId;
+    private String storeId;
 }

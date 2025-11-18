@@ -29,7 +29,7 @@ public interface StaffService {
     /**
      * Find staff by department ID
      */
-    List<StaffResponse> findByDepartment(Department department);
+    List<StaffResponse> findByDepartment(String departmentId);
 
     /**
      * Find staff by branch ID

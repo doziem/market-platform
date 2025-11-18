@@ -145,11 +145,5 @@ public class StoreMapper {
                 .build();
     }
 
-//
-//    public static List<StoreBranchRequest> toStudentDTOList(List<StoreBranch> storeBranch) {
-//        if (storeBranch == null) return null;
-//        return storeBranch.stream()
-//                .map(StoreMapper::toDto)
-//                .collect(Collectors.toList());
-//    }
+
 }

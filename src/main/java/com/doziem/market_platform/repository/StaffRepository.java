@@ -20,8 +20,8 @@ public interface StaffRepository extends JpaRepository<Staff, String>  {
 """)
     List<Staff> searchByName(@Param("name") String name);
 
-
-    List<Staff> findByDepartment(Department department);
+    @Query("SELECT s FROM Staff s WHERE s.department.departmentId = :departmentId")
+    List<Staff> findByDepartment(String departmentId);
     List<Staff> findByActiveTrue();
 
     @Query(value = """
