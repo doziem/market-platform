@@ -8,7 +8,6 @@ import lombok.Data;
 @Builder
 @Data
 public class CentralWarehouseDto {
-    private String centralWarehouseId;
 
     @NotBlank(message = "warehouseName is required")
     @Size(max = 100, message = "warehouseName must be at most 100 characters")
