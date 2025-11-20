@@ -1,22 +1,12 @@
-package com.doziem.market_platform.model;
+package com.doziem.market_platform.payload.request;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
-import java.util.List;
-
-@Entity
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
-@Table(name = "logistic_service")
-public class LogisticsCompany {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+public class LogisticsCompanyRequest {
     private String  logisticsId;
 
     @NotBlank(message = "Logistics Company name is required")
@@ -32,6 +22,4 @@ public class LogisticsCompany {
     @NotBlank(message = "Region Covered is required")
     private String regionCovered;
 
-@OneToMany(mappedBy = "logisticsCompany", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<BaseDelivery> deliveries;
 }

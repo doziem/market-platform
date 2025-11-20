@@ -4,12 +4,11 @@ import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.model.CentralWarehouse;
 import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.payload.dto.CentralWarehouseDto;
-import com.doziem.market_platform.payload.response.StoreResponse;
 import com.doziem.market_platform.repository.CentralWarehouseRepository;
 import com.doziem.market_platform.repository.StoreRepository;
+import com.doziem.market_platform.service.CentralWarehousesService;
 import com.doziem.market_platform.system.Result;
 
-import  com.doziem.market_platform.service.CentralWarehouseService;
 import com.doziem.market_platform.mapper.CentralWarehouseMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,12 +17,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CentralWarehouseServiceImpl implements CentralWarehouseService {
+public class CentralWarehousesServiceImpl implements CentralWarehousesService {
 
-    private static final Logger log = LoggerFactory.getLogger(CentralWarehouseServiceImpl.class);
-    private final CentralWarehouseMapper centralWarehouseMapper;
+    private static final Logger log = LoggerFactory.getLogger(CentralWarehousesServiceImpl.class);
     private final CentralWarehouseRepository centralWarehouseRepository;
-    private final StoreServiceImpl storeService;
     private final StoreRepository storeRepository;
 
     @Override
@@ -35,7 +32,7 @@ public class CentralWarehouseServiceImpl implements CentralWarehouseService {
             throw  new CustomException( "Only Head Quarter store can create central warehouse");
         }
 
-        CentralWarehouse centralWarehouse = centralWarehouseMapper.toEntity(dto, store);
+        CentralWarehouse centralWarehouse = CentralWarehouseMapper.toEntity(dto, store);
         CentralWarehouse savedWarehouse = centralWarehouseRepository.save(centralWarehouse);
 
         CentralWarehouseDto warehouseDto = CentralWarehouseMapper.toDto(savedWarehouse);
