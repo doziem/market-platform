@@ -8,6 +8,8 @@ import com.doziem.market_platform.payload.request.StoreBranchRequest;
 import com.doziem.market_platform.payload.response.CentralWarehouseResponse;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class CentralWarehouseMapper {
 
@@ -24,7 +26,7 @@ public class CentralWarehouseMapper {
                 .build();
     }
 
-    public CentralWarehouse toEntity(CentralWarehouseDto dto, Store store) {
+    public static CentralWarehouse toEntity(CentralWarehouseDto dto, Store store) {
         return CentralWarehouse.builder()
                 .warehouseName(dto.getWarehouseName())
                 .address(dto.getAddress())
@@ -40,7 +42,6 @@ public class CentralWarehouseMapper {
             return null;
         }
         return CentralWarehouseDto.builder()
-                .centralWarehouseId(warehouse.getCentralWarehouseId())
                 .warehouseName(warehouse.getWarehouseName())
                 .address(warehouse.getAddress())
                 .city(warehouse.getCity())
@@ -48,5 +49,21 @@ public class CentralWarehouseMapper {
                 .storeId(warehouse.getStore() != null ? warehouse.getStore().getStoreId() : null)
                 .country(warehouse.getCountry())
                 .build();
+    }
+    public static CentralWarehouse updateEntity(CentralWarehouse warehouse, CentralWarehouseDto dto) {
+        if (warehouse == null || dto == null) {
+            return warehouse;
+        }
+        warehouse.setWarehouseName(dto.getWarehouseName());
+        warehouse.setAddress(dto.getAddress());
+        warehouse.setCity(dto.getCity());
+        warehouse.setState(dto.getState());
+        warehouse.setCountry(dto.getCountry());
+        return warehouse;
+    }
+    public static List<CentralWarehouseResponse> toResponseList(List<CentralWarehouse> warehouses) {
+        return warehouses.stream()
+                .map(CentralWarehouseMapper::toResponse)
+                .toList();
     }
 }
