@@ -16,7 +16,9 @@ public class DeliveryProof {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String deliveryProofId;
-    @OneToOne
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "delivery_id")
     private BaseDelivery delivery;
     private String recipientName;
     private String signatureUrl;
