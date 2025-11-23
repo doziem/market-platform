@@ -36,4 +36,7 @@ public abstract class BaseDelivery {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "logistics_id")
     private LogisticsCompany logisticsCompany;
+
+    @OneToOne(mappedBy = "delivery", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private DeliveryCost cost;
 }

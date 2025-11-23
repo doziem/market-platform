@@ -16,14 +16,14 @@ public class DeliveryItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String deliveryItemIId;
+    private String deliveryItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private BaseDelivery delivery;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Product product;
