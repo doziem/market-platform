@@ -1,7 +1,10 @@
 package com.doziem.market_platform.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Setter
@@ -15,14 +18,16 @@ public class DeliveryItem {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String deliveryItemIId;
 
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "delivery_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private BaseDelivery delivery;
 
-    @ManyToOne
-    private BaseDelivery delivery; // using inheritance requires careful mapping; alternately map to concrete classes
-
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "product_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Product product;
 
-
+    @NotBlank(message = "Total quantity is required")
     private int quantity;
 }

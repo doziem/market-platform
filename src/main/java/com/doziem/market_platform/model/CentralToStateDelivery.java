@@ -1,7 +1,6 @@
 package com.doziem.market_platform.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -12,9 +11,11 @@ import lombok.*;
 @Builder
 public class CentralToStateDelivery extends BaseDelivery{
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "central_warehouse_id")
     private CentralWarehouse centralWarehouse;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_warehouse_id")
     private StateWarehouse stateWarehouse;
 }
