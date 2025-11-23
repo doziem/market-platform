@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Setter
@@ -40,9 +42,6 @@ public class Product {
     @NotBlank(message = "Brand is required")
     private String brand;
 
-    @NotBlank(message = "Image is required")
-    private String image;
-
     @NotNull(message = "Unit price is required")
     private Double unitPrice;
 
@@ -68,6 +67,9 @@ public class Product {
     }
 
     // -------------------- RELATIONSHIPS --------------------
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "categoryId", nullable = false)

@@ -31,6 +31,10 @@ public class LogisticsCompany {
     private String address;
     @NotBlank(message = "Region Covered is required")
     private String regionCovered;
+    @NotBlank(message = "Image URL is required")
+    private String logisticLogoUrl;
+    @NotBlank(message = "Public ID is required")
+    private String publicId;
 
 @OneToMany(mappedBy = "logisticsCompany", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<BaseDelivery> deliveries;

@@ -24,8 +24,6 @@ public class ProductMapper {
                 .description(dto.getDescription())
                 .mrp(dto.getMrp())
                 .sellingPrice(dto.getSellingPrice())
-                .brand(dto.getBrand())
-                .image(dto.getImage())
                 .unitPrice(dto.getUnitPrice())
                 .quantityInStock(dto.getQuantityInStock())
                 .reorderLevel(dto.getReorderLevel())
@@ -47,7 +45,7 @@ public class ProductMapper {
                 .mrp(product.getMrp())
                 .sku(product.getSku())
                 .brand(product.getBrand())
-                .image(product.getImage())
+                .images(product.getImages().stream().map(ProductImage::getImageUrl).toList())
                 .unitPrice(product.getUnitPrice())
                 .reorderLevel(product.getReorderLevel())
                 .createdAt(product.getCreatedAt())
@@ -70,6 +68,8 @@ public class ProductMapper {
     }
 
     public static Product toUpdateEntity(Product existingProduct, UpdateProduct product){
+
+
         return Product.builder()
                 .productName(product.getProductName() != null? product.getProductName() : existingProduct.getProductName())
                 .mrp(product.getMrp() != null ? product.getMrp() : existingProduct.getMrp())
@@ -77,7 +77,6 @@ public class ProductMapper {
                 .sellingPrice(product.getSellingPrice() != null ? product.getSellingPrice() : existingProduct.getSellingPrice())
                 .description(product.getDescription() != null ? product.getDescription() : existingProduct.getDescription())
                 .sku( product.getSku() != null ? product.getSku() : existingProduct.getSku())
-                .image( product.getImage() != null ? product.getImage() : existingProduct.getImage())
                 .unitPrice( product.getUnitPrice() != null ? product.getUnitPrice() : existingProduct.getUnitPrice())
                 .quantityInStock( product.getQuantityInStock() != null ? product.getQuantityInStock() : existingProduct.getQuantityInStock())
                 .reorderLevel( product.getReorderLevel() != null ? product.getReorderLevel() : existingProduct.getReorderLevel())

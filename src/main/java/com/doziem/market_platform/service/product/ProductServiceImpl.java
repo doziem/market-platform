@@ -1,18 +1,25 @@
 package com.doziem.market_platform.service.product;
 
+import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.exception.ResourceNotFoundException;
 import com.doziem.market_platform.mapper.ProductMapper;
 import com.doziem.market_platform.model.Category;
 import com.doziem.market_platform.model.CentralWarehouse;
 import com.doziem.market_platform.model.Product;
+import com.doziem.market_platform.model.ProductImage;
 import com.doziem.market_platform.payload.request.ProductRequest;
 import com.doziem.market_platform.payload.request.UpdateProduct;
 import com.doziem.market_platform.payload.response.ProductResponse;
 import com.doziem.market_platform.repository.*;
+import com.doziem.market_platform.service.cloudinary.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +28,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final CentralWarehouseRepository centralWarehouseRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
@@ -31,22 +39,55 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Central Warehouse not found"));
 
         Product product = ProductMapper.toEntity(request,category,centralWarehouse);
-        Product validatedProduct = validateProduct(product);
+
+        Product validatedProduct = validateProduct(product,request);
+
         Product savedProduct = productRepository.save(validatedProduct);
 
         return ProductMapper.toResponse(productRepository.save(savedProduct));
 
     }
 
-
     @Override
+    @Transactional
     public ProductResponse updateProduct(String productId, UpdateProduct request) {
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Product updateProduct = ProductMapper.toUpdateEntity(existingProduct, request);
 
-        return  ProductMapper.toResponse(productRepository.save(updateProduct));
+
+        if (request.getNewImages() != null && !request.getNewImages().isEmpty()) {
+
+            if (request.getNewImages().size() < 4) {
+                throw new IllegalArgumentException("Product must have at least 4 images");
+            }
+
+            // delete old images from Cloudinary
+            for (ProductImage img : existingProduct.getImages()) {
+                cloudinaryService.delete(img.getPublicId());
+            }
+
+            existingProduct.getImages().clear();
+
+            // upload new images
+            List<ProductImage> newImageList = new ArrayList<>();
+
+            for (MultipartFile file : request.getNewImages()) {
+                Map<String, String> upload = cloudinaryService.upload(file, "products");
+
+                ProductImage image = ProductImage.builder()
+                        .imageUrl(upload.get("url"))
+                        .publicId(upload.get("publicId"))
+                        .product(existingProduct)
+                        .build();
+
+                newImageList.add(image);
+            }
+            updateProduct.setImages(newImageList);
+        }
+
+            return  ProductMapper.toResponse(productRepository.save(updateProduct));
     }
 
     @Override
@@ -63,13 +104,39 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(String productId) {
-        if (!productRepository.existsById(productId)) {
-            throw new ResourceNotFoundException("Product not found");
-        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException("Product not found"));
+
+        // delete cloudinary images
+        product.getImages().forEach(img -> {
+            cloudinaryService.delete(img.getPublicId());
+        });
         productRepository.deleteById(productId);
     }
 
-    private Product validateProduct(Product product) {
+    private Product validateProduct(Product product, ProductRequest request) {
+
+        if (product.getImages().size() < 4) {
+            throw new CustomException("Product must have at least 4 images");
+        }
+
+        List<ProductImage> imageList = new ArrayList<>();
+
+        for (MultipartFile file : request.getImages()) {
+
+            Map<String, String> upload = cloudinaryService.upload(file, "products");
+
+            ProductImage img = new ProductImage();
+            img.setImageUrl(upload.get("url"));
+            img.setPublicId(upload.get("publicId"));
+            img.setProduct(product);
+
+            imageList.add(img);
+        }
+
+        product.setImages(imageList);
+
         return product;
     }
 }
