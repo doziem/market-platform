@@ -21,7 +21,7 @@ public class StateReplenishmentRequest {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String  requestId;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "state_warehouse_id", nullable = false)
     private StateWarehouse stateWarehouse;
 

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -18,7 +19,7 @@ public class ProductResponse {
     private Double mrp;
     private Double sellingPrice;
     private String brand;
-    private String image;
+    List<String> images;
     private double unitPrice;
     private int quantityInStock;
     private int reorderLevel;

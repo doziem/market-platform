@@ -1,6 +1,5 @@
 package com.doziem.market_platform.model;
 
-import com.doziem.market_platform.enums.WarehouseType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -30,7 +29,7 @@ public class CentralWarehouse {
     @NotBlank(message = "Country is required")
     private String country;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 

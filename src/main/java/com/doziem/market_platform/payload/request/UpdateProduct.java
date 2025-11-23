@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -21,7 +24,7 @@ public class UpdateProduct {
     private Double mrp;
     private Double sellingPrice;
     private String brand;
-    private String image;
+    private List<MultipartFile> newImages;
     private Double unitPrice;
     private Integer quantityInStock;
     private Integer reorderLevel;
