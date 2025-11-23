@@ -2,6 +2,7 @@ package com.doziem.market_platform.service.product;
 
 import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.exception.ResourceNotFoundException;
+import com.doziem.market_platform.mapper.CentralWarehouseMapper;
 import com.doziem.market_platform.mapper.ProductMapper;
 import com.doziem.market_platform.model.Category;
 import com.doziem.market_platform.model.CentralWarehouse;
@@ -12,12 +13,16 @@ import com.doziem.market_platform.payload.request.UpdateProduct;
 import com.doziem.market_platform.payload.response.ProductResponse;
 import com.doziem.market_platform.repository.*;
 import com.doziem.market_platform.service.cloudinary.CloudinaryService;
+import com.doziem.market_platform.system.Result;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +30,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final CentralWarehouseRepository centralWarehouseRepository;
@@ -113,6 +119,24 @@ public class ProductServiceImpl implements ProductService {
             cloudinaryService.delete(img.getPublicId());
         });
         productRepository.deleteById(productId);
+    }
+
+    @Override
+    public Result assignProductsToCentralWarehouse(String warehouseId, List<String> productIds) {
+        try {
+            CentralWarehouse warehouse = centralWarehouseRepository.findById(warehouseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found"));
+
+            List<Product> products = productRepository.findAllById(productIds);
+
+            products.forEach(warehouse::addProduct);
+
+         return new Result(true, "Product successfully added to Central warehouse", centralWarehouseRepository.save(warehouse));
+        }catch (CustomException ex){
+            log.error("Error Adding Product to Central warehouse {}", ex.getMessage());
+            return new Result(false, "Error Adding Product to Central warehouse");
+        }
+
     }
 
     private Product validateProduct(Product product, ProductRequest request) {
