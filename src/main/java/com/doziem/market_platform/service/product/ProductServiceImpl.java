@@ -1,18 +1,16 @@
 package com.doziem.market_platform.service.product;
 
+import com.doziem.market_platform.enums.RequestStatus;
 import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.exception.ResourceNotFoundException;
-import com.doziem.market_platform.mapper.CentralWarehouseMapper;
 import com.doziem.market_platform.mapper.ProductMapper;
-import com.doziem.market_platform.model.Category;
-import com.doziem.market_platform.model.CentralWarehouse;
-import com.doziem.market_platform.model.Product;
-import com.doziem.market_platform.model.ProductImage;
+import com.doziem.market_platform.model.*;
 import com.doziem.market_platform.payload.request.ProductRequest;
 import com.doziem.market_platform.payload.request.UpdateProduct;
 import com.doziem.market_platform.payload.response.ProductResponse;
 import com.doziem.market_platform.repository.*;
 import com.doziem.market_platform.service.cloudinary.CloudinaryService;
+import com.doziem.market_platform.service.impl.UserPrincipal;
 import com.doziem.market_platform.system.Result;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +33,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final CentralWarehouseRepository centralWarehouseRepository;
     private final CloudinaryService cloudinaryService;
+    private final StateReplenishmentRequestRepository requestRepository;
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
@@ -122,6 +121,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Result assignProductsToCentralWarehouse(String warehouseId, List<String> productIds) {
         try {
             CentralWarehouse warehouse = centralWarehouseRepository.findById(warehouseId)
@@ -131,13 +131,77 @@ public class ProductServiceImpl implements ProductService {
 
             products.forEach(warehouse::addProduct);
 
-         return new Result(true, "Product successfully added to Central warehouse", centralWarehouseRepository.save(warehouse));
+         return new Result(true, "Product successfully added to Central Warehouse", centralWarehouseRepository.save(warehouse));
         }catch (CustomException ex){
             log.error("Error Adding Product to Central warehouse {}", ex.getMessage());
             return new Result(false, "Error Adding Product to Central warehouse");
         }
 
     }
+
+    @Override
+    @Transactional
+    public void fulfillStateReplenishmentRequest(String requestId, UserPrincipal currentUser) {;
+
+        StateReplenishmentRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new CustomException("Request not found"));
+
+        StateWarehouse stateWarehouse = request.getStateWarehouse();
+        CentralWarehouse centralWarehouse = stateWarehouse.getCentralWarehouse();
+
+        if (centralWarehouse == null) {
+            throw new CustomException("State warehouse is not linked to a central warehouse");
+        }
+
+        // Verify all requested products exist & have enough stock
+        for (StateReplenishmentItem item : request.getItems()) {
+            Product product = item.getProduct();
+
+            if (product.getCentralWarehouse() == null || !product.getCentralWarehouse().getCentralWarehouseId().equals(centralWarehouse.getCentralWarehouseId())) {
+                throw new CustomException(
+                        "Product " + product.getProductName() + " is not located in the central warehouse");
+            }
+
+            if (product.getQuantityInStock() < item.getRequestedQuantity()) {
+                throw new CustomException("Insufficient stock for product " + product.getProductName());
+            }
+        }
+
+        // All items validated.  stock deductions and transfers.
+        for (StateReplenishmentItem item : request.getItems()) {
+
+            Product product = validateProductAndStockQuantity(item, stateWarehouse);
+
+            productRepository.save(product);
+        }
+
+        // Update request status
+        request.setStatus(RequestStatus.FULFILLED);
+        request.setFulfilledDate(ZonedDateTime.now());
+        request.setApprovedBy(currentUser.getStaff().getFirstName() + " " + currentUser.getStaff().getLastName());
+        request.setApprovedByPosition(currentUser.getStaff().getPosition());
+
+        requestRepository.save(request);
+
+    }
+
+    private static Product validateProductAndStockQuantity(StateReplenishmentItem item, StateWarehouse stateWarehouse) {
+        Product product = item.getProduct();
+        int requestedQty = item.getRequestedQuantity();
+
+        // Deduct from Central Warehouse stock
+        product.setQuantityInStock(product.getQuantityInStock() - requestedQty);
+
+        // Move product to State Warehouse if not already assigned
+        product.setStateWarehouse(stateWarehouse);
+
+        // If the central warehouse stock reaches zero → remove reference
+        if (product.getQuantityInStock() == 0) {
+            product.setCentralWarehouse(null);
+        }
+        return product;
+    }
+
 
     private Product validateProduct(Product product, ProductRequest request) {
 
