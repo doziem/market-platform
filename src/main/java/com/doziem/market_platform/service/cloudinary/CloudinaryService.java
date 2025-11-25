@@ -4,11 +4,13 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.doziem.market_platform.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CloudinaryService {
@@ -40,6 +42,7 @@ public class CloudinaryService {
             }
 
         } catch (Exception ex) {
+            log.error("Cloudinary deletion error: {}", ex.getMessage());
             throw new CustomException("Cloudinary deletion error → " + ex.getMessage());
         }
     }
