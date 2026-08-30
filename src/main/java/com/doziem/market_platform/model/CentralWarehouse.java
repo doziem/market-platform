@@ -1,7 +1,11 @@
 package com.doziem.market_platform.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -15,12 +19,31 @@ public class CentralWarehouse {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String  centralWarehouseId;
-    private String name;
+    @NotBlank(message = "Warehouse name is required")
+    private String warehouseName;
+    @NotBlank(message = "Warehouse type is required")
     private String address;
+    @NotBlank(message = "City is required")
     private String city;
+    @NotBlank(message = "State is required")
     private String state;
+    @NotBlank(message = "Country is required")
     private String country;
 
-    @OneToOne
-    private Store store;;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
+
+    @OneToMany(mappedBy = "centralWarehouse", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products = new ArrayList<>();;
+
+    public void addProduct(Product product) {
+        products.add(product);
+        product.setCentralWarehouse(this);
+    }
+
+    public void removeProduct(Product product) {
+        products.remove(product);
+        product.setCentralWarehouse(null);
+    }
 }

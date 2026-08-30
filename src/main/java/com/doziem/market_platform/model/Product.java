@@ -1,9 +1,13 @@
 package com.doziem.market_platform.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Setter
@@ -13,59 +17,74 @@ import java.time.ZonedDateTime;
 @Builder
 @Table(name = "product-service")
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String  productId;
+    private String productId;
 
+    @NotBlank(message = "Product name is required")
     @Column(nullable = false)
     private String productName;
 
-    @Column(nullable = false,unique = true)
+    @NotBlank(message = "SKU is required")
+    @Column(nullable = false, unique = true)
     private String sku;
 
+    @NotBlank(message = "Description is required")
     @Column(nullable = false)
     private String description;
 
     private Double mrp;
 
+    @NotNull(message = "Selling Price is required")
     private Double sellingPrice;
 
+    @NotBlank(message = "Brand is required")
     private String brand;
 
-    private String image;
+    @NotNull(message = "Unit price is required")
+    private Double unitPrice;
 
-    private double unitPrice;
+    @NotNull(message = "Quantity in stock is required")
+    private Integer quantityInStock;
 
-    private int quantityInStock;
+    @NotNull(message = "Reorder level is required")
+    private Integer reorderLevel;
 
-    private int reorderLevel;
-
-    @ManyToOne
-    private CentralWarehouse centralWarehouse;
-
-    @ManyToOne
-    private StateWarehouse stateWarehouse;
-
+    @Column(nullable = false, updatable = false)
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = ZonedDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedAt = ZonedDateTime.now();
     }
+
+    // -------------------- RELATIONSHIPS --------------------
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "categoryId", nullable = false)
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id",referencedColumnName = "storeId", nullable = false)
+    @JoinColumn(name = "central_warehouse_id", referencedColumnName = "centralWarehouseId")
+    private CentralWarehouse centralWarehouse;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_warehouse_id", referencedColumnName = "stateWarehouseId", nullable = true)
+    private StateWarehouse stateWarehouse;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", referencedColumnName = "storeId", nullable = true)
     private Store store;
 
 }

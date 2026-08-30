@@ -1,6 +1,7 @@
 package com.doziem.market_platform.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -15,12 +16,15 @@ public class StateReplenishmentItem {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String  itemId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
     private StateReplenishmentRequest stateRequest;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
     private Product product;
 
+    @NotNull
     private int requestedQuantity;
     private int approvedQuantity;
 }

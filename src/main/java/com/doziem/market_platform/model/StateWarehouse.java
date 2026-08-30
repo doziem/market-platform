@@ -1,7 +1,11 @@
 package com.doziem.market_platform.model;
 
+import com.doziem.market_platform.model.staff.Staff;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -18,14 +22,20 @@ public class StateWarehouse {
 
     private String name;
     private String address;
+    private String city;
     private String state;
-    private String managerName;
 
-    @OneToOne
-    @JoinColumn(name = "main_branch_id")
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<Staff> staffList = new ArrayList<>();
+
+    @OneToMany (fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "stateWarehouse")
+    private List<Product> products = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "branch_id")
     private StoreBranch mainBranch;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "central_warehouse_id")
     private CentralWarehouse centralWarehouse;
 }
