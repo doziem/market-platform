@@ -159,7 +159,7 @@ public class ProductServiceImpl implements ProductService {
 
             if (product.getCentralWarehouse() == null || !product.getCentralWarehouse().getCentralWarehouseId().equals(centralWarehouse.getCentralWarehouseId())) {
                 throw new CustomException(
-                        "Product " + product.getProductName() + " is not located in the central warehouse");
+                        "Product " + product.getProductName() + " is not assigned to the central warehouse");
             }
 
             if (product.getQuantityInStock() < item.getRequestedQuantity()) {
@@ -196,8 +196,8 @@ public class ProductServiceImpl implements ProductService {
         product.setStateWarehouse(stateWarehouse);
 
         // If the central warehouse stock reaches zero → remove reference
-        if (product.getQuantityInStock() == 0) {
-            product.setCentralWarehouse(null);
+        if (product.getQuantityInStock() < 1) {
+
         }
         return product;
     }
