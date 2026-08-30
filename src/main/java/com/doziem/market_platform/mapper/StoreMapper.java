@@ -1,7 +1,10 @@
 package com.doziem.market_platform.mapper;
 
 import com.doziem.market_platform.enums.Role;
-import com.doziem.market_platform.model.*;
+import com.doziem.market_platform.enums.StoreType;
+import com.doziem.market_platform.model.Store;
+import com.doziem.market_platform.model.User;
+import com.doziem.market_platform.model.WorkHour;
 import com.doziem.market_platform.payload.dto.UserDto;
 import com.doziem.market_platform.payload.dto.WorkHourDto;
 import com.doziem.market_platform.payload.request.StoreRequest;
@@ -11,36 +14,36 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class StoreMapper {
-    private  final StoreBranchMapper storeBranchMapper;
 
-    public static StoreRequest toDto(Store store){
+    public static StoreRequest toDto(Store store) {
+        if (store == null) {
+            return null;
+        }
 
-     if(store ==null){
-         return null;
-     }
-     return StoreRequest.builder()
-             .storeName(store.getStoreName())
-             .storeType(store.getStoreType())
-             .status(store.getStatus())
-             .address(store.getAddress())
-             .city(store.getCity())
-             .lga(store.getLga())
-             .state(store.getState())
-             .country(store.getCountry())
-             .phoneNumber(store.getPhoneNumber())
-             .zipCode(store.getZipCode())
-             .countryCode(store.getCountryCode())
-             .iso(store.getIso())
-             .weekday(toWorkHourDto(store.getWeekday()))
-             .saturday(toWorkHourDto(store.getSaturday()))
-             .sunday(toWorkHourDto(store.getSunday()))
-             .build();
+        return StoreRequest.builder()
+                .storeName(store.getStoreName())
+                .storeType(store.getStoreType())
+                .status(store.getStatus())
+                .address(store.getAddress())
+                .city(store.getCity())
+                .lga(store.getLga())
+                .state(store.getState())
+                .country(store.getCountry())
+                .phoneNumber(store.getPhoneNumber())
+                .zipCode(store.getZipCode())
+                .countryCode(store.getCountryCode())
+                .iso(store.getIso())
+                .isHeadQuarter(store.isHeadQuarter())
+                .parentStoreId(store.getParentStore() != null ? store.getParentStore().getStoreId() : null)
+                .weekday(toWorkHourDto(store.getWeekday()))
+                .saturday(toWorkHourDto(store.getSaturday()))
+                .sunday(toWorkHourDto(store.getSunday()))
+                .build();
     }
 
     public static Store toEntity(StoreRequest dto, User user) {
@@ -48,9 +51,9 @@ public class StoreMapper {
             return null;
         }
 
-        return Store.builder()
+        Store store = Store.builder()
                 .storeName(dto.getStoreName())
-                .storeType(dto.getStoreType())
+                .storeType(dto.getStoreType() != null ? dto.getStoreType() : StoreType.HEADQUARTERS)
                 .user(user)
                 .status(dto.getStatus())
                 .address(dto.getAddress())
@@ -64,24 +67,28 @@ public class StoreMapper {
                 .createdAt(ZonedDateTime.now())
                 .updatedAt(ZonedDateTime.now())
                 .iso(dto.getIso())
+                .isHeadQuarter(dto.isHeadQuarter())
                 .weekday(toWorkHourEntity(dto.getWeekday()))
                 .saturday(toWorkHourEntity(dto.getSaturday()))
                 .sunday(toWorkHourEntity(dto.getSunday()))
                 .build();
+
+        if (dto.getParentStoreId() != null) {
+            store.setParentStore(Store.builder().storeId(dto.getParentStoreId()).build());
+        }
+
+        return store;
     }
 
-    public static StoreResponse storeResponse(Store store){
-
-        if (store == null) return null;
+    public static StoreResponse storeResponse(Store store) {
+        if (store == null) {
+            return null;
+        }
 
         User user = store.getUser();
-
         List<StoreBranchResponse> storeBranch = store.getStoreBranches().stream()
                 .map(StoreBranchMapper::toResponse)
                 .toList();
-
-        List<Product> products = new ArrayList<>(store.getProducts());
-
 
         UserDto userDto = UserDto.builder()
                 .userId(user.getUserId())
@@ -93,7 +100,6 @@ public class StoreMapper {
                 .updatedAt(user.getUpdatedAt())
                 .lastLogin(user.getLastLogin())
                 .build();
-
 
         return StoreResponse.builder()
                 .storeId(store.getStoreId())
@@ -112,8 +118,11 @@ public class StoreMapper {
                 .zipCode(store.getZipCode())
                 .countryCode(store.getCountryCode())
                 .iso(store.getIso())
+                .isHeadQuarter(store.isHeadQuarter())
+                .mainBranch(store.isMainBranch())
+                .parentStoreId(store.getParentStore() != null ? store.getParentStore().getStoreId() : null)
+                .parentStoreName(store.getParentStore() != null ? store.getParentStore().getStoreName() : null)
                 .storeBranches(storeBranch)
-                .products(products)
                 .createdAt(ZonedDateTime.now())
                 .updatedAt(ZonedDateTime.now())
                 .weekday(toWorkHourDto(store.getWeekday()))
@@ -122,7 +131,6 @@ public class StoreMapper {
                 .build();
     }
 
-    // Convert WorkHour to WorkHourDto
     private static WorkHourDto toWorkHourDto(WorkHour workHour) {
         if (workHour == null || workHour.getOpenTime() == null || workHour.getCloseTime() == null) {
             return null;
@@ -134,16 +142,14 @@ public class StoreMapper {
                 .build();
     }
 
-    // Convert WorkHourDto to WorkHour
     private static WorkHour toWorkHourEntity(WorkHourDto dto) {
         if (dto == null || dto.getOpenTime() == null || dto.getCloseTime() == null) {
             return null;
         }
+
         return WorkHour.builder()
                 .openTime(dto.getOpenTime())
                 .closeTime(dto.getCloseTime())
                 .build();
     }
-
-
 }

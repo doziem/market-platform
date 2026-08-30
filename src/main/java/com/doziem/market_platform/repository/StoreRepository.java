@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store, String> {
     boolean existsByStoreName(String storeName);
+    boolean existsByStoreNameIgnoreCaseAndParentStore_StoreId(String storeName, String parentStoreId);
 //    Store findByStoreAdminId(String adminId);
 }

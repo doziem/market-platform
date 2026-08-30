@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Data
 @Builder
 public class ProductDto {
@@ -36,6 +35,6 @@ public class ProductDto {
     private String centralWarehouseId;
     @NotBlank(message = "State Warehouse ID is required")
     private String stateWarehouseId;
-    @NotBlank(message = "Store ID is required")
-    private String storeId;
+    @NotBlank(message = "Store Branch ID is required")
+    private String storeBranchId;
 }

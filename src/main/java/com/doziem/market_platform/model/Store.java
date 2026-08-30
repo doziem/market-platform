@@ -1,6 +1,7 @@
 package com.doziem.market_platform.model;
 
 import com.doziem.market_platform.enums.StoreStatus;
+import com.doziem.market_platform.enums.StoreType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,15 +20,16 @@ public class Store {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String  storeId;
+    private String storeId;
 
     private String storeName;
+
+    @Enumerated(EnumType.STRING)
+    private StoreType storeType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;
-
-    private String storeType;
 
     private StoreStatus status;
 
@@ -41,10 +43,10 @@ public class Store {
 
     private String state;
 
-    private String country ;
+    private String country;
 
     @Column(unique = true, nullable = false)
-    private String  phoneNumber;
+    private String phoneNumber;
 
     private String zipCode;
 
@@ -52,34 +54,40 @@ public class Store {
     private String iso;
 
     private boolean isHeadQuarter = false;
+    private boolean mainBranch = false;
 
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Product> products = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_store_id")
+    private Store parentStore;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_warehouse_id")
+    private StateWarehouse stateWarehouse;
+
+    @OneToMany(mappedBy = "parentStore", cascade = CascadeType.ALL)
+    private List<Store> storeBranches = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
-    private List<StoreBranch> storeBranches = new ArrayList<>();
+    private List<Product> products = new ArrayList<>();
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name="openTime", column=@Column(name="saturday_openTime")),
-            @AttributeOverride(name="closeTime", column=@Column(name="saturday_closeTime")),
-
+            @AttributeOverride(name = "openTime", column = @Column(name = "saturday_openTime")),
+            @AttributeOverride(name = "closeTime", column = @Column(name = "saturday_closeTime")),
     })
     private WorkHour saturday;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name="openTime", column=@Column(name="sunday_openTime")),
-            @AttributeOverride(name="closeTime", column=@Column(name="sunday_closeTime")),
-
+            @AttributeOverride(name = "openTime", column = @Column(name = "sunday_openTime")),
+            @AttributeOverride(name = "closeTime", column = @Column(name = "sunday_closeTime")),
     })
     private WorkHour sunday;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name="openTime", column=@Column(name="weekday_openTime")),
-            @AttributeOverride(name="closeTime", column=@Column(name="weekday_closeTime")),
-
+            @AttributeOverride(name = "openTime", column = @Column(name = "weekday_openTime")),
+            @AttributeOverride(name = "closeTime", column = @Column(name = "weekday_closeTime")),
     })
     private WorkHour weekday;
 
@@ -88,14 +96,40 @@ public class Store {
     private ZonedDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         createdAt = ZonedDateTime.now();
         status = StoreStatus.PENDING;
     }
 
     @PreUpdate
-    protected void onUpdate(){
+    protected void onUpdate() {
         updatedAt = ZonedDateTime.now();
     }
 
+    public void addBranch(Store branch) {
+        if (branch == null) {
+            return;
+        }
+
+        if (!storeBranches.contains(branch)) {
+            storeBranches.add(branch);
+        }
+
+        branch.setParentStore(this);
+        branch.setStoreType(StoreType.BRANCH);
+    }
+
+    public void addProduct(Product product) {
+        if (product == null) {
+            return;
+        }
+
+        if (!products.contains(product)) {
+            products.add(product);
+        }
+
+        product.setStore(this);
+        product.setCentralWarehouse(null);
+        product.setStateWarehouse(null);
+    }
 }

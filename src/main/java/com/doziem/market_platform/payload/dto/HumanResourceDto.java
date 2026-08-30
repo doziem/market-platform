@@ -1,6 +1,6 @@
 package com.doziem.market_platform.payload.dto;
 
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.model.staff.Staff;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -21,7 +21,7 @@ public class HumanResourceDto {
     private List<DepartmentDto> departments;
 
     @NotBlank(message = "Store branch is required")
-    private StoreBranch branch;
+    private Store branch;
 
     @NotBlank(message = "Job title is required")
     private String roleTitle ;

@@ -2,7 +2,7 @@ package com.doziem.market_platform.model.staff;
 
 import com.doziem.market_platform.enums.EmploymentStatus;
 import com.doziem.market_platform.model.StateWarehouse;
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -51,7 +51,7 @@ public class Staff {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private StoreBranch branch;
+    private Store branch;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "state_warehouse_id")

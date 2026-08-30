@@ -1,6 +1,6 @@
 package com.doziem.market_platform.model.staff;
 
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -31,7 +31,7 @@ public class HumanResource {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "branch_id")
-    private StoreBranch branch;
+    private Store branch;
 
     private String roleTitle;
 

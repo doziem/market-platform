@@ -1,6 +1,5 @@
 package com.doziem.market_platform.mapper;
 
-import com.doziem.market_platform.model.StoreBranch;
 import com.doziem.market_platform.model.User;
 import com.doziem.market_platform.model.staff.Department;
 import com.doziem.market_platform.model.staff.Staff;
@@ -37,8 +36,8 @@ public class StaffMapper {
                 .userEmail(staff.getUser() != null ? staff.getUser().getEmail() : null)
                 .departmentId(staff.getDepartment() != null ? staff.getDepartment().getDepartmentId() : null)
                 .departmentName(staff.getDepartment() != null ? staff.getDepartment().getDepartmentName() : null)
-                .branchId(staff.getBranch() != null ? staff.getBranch().getBranchId() : null)
-                .branchName(staff.getBranch() != null ? staff.getBranch().getBranchName() : null)
+                .branchId(staff.getBranch() != null ? staff.getBranch().getStoreId() : null)
+                .branchName(staff.getBranch() != null ? staff.getBranch().getStoreName() : null)
                 .build();
 
     }

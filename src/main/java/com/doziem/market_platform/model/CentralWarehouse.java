@@ -34,16 +34,39 @@ public class CentralWarehouse {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @OneToMany(mappedBy = "centralWarehouse", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "centralWarehouse", cascade = CascadeType.ALL)
     private List<Product> products = new ArrayList<>();;
 
     public void addProduct(Product product) {
-        products.add(product);
+        if (product == null) {
+            return;
+        }
+
+        if (product.getStateWarehouse() != null) {
+            product.getStateWarehouse().getProducts().remove(product);
+        }
+
+        if (product.getStore() != null) {
+            product.getStore().getProducts().remove(product);
+        }
+
+        if (!products.contains(product)) {
+            products.add(product);
+        }
+
         product.setCentralWarehouse(this);
+        product.setStateWarehouse(null);
+        product.setStore(null);
     }
 
     public void removeProduct(Product product) {
+        if (product == null) {
+            return;
+        }
+
         products.remove(product);
-        product.setCentralWarehouse(null);
+        if (product.getCentralWarehouse() == this) {
+            product.setCentralWarehouse(null);
+        }
     }
 }

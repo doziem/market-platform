@@ -1,8 +1,7 @@
 package com.doziem.market_platform.payload.response;
 
 import com.doziem.market_platform.enums.StoreStatus;
-import com.doziem.market_platform.model.Product;
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.enums.StoreType;
 import com.doziem.market_platform.payload.dto.UserDto;
 import com.doziem.market_platform.payload.dto.WorkHourDto;
 import lombok.Builder;
@@ -19,7 +18,7 @@ public class StoreResponse {
     private String storeId;
     private String storeName;
 
-    private String storeType;
+    private StoreType storeType;
 
     private StoreStatus status;
 
@@ -47,8 +46,10 @@ public class StoreResponse {
     private String iso;
 
     private boolean isHeadQuarter;
+    private boolean mainBranch;
 
-    private List<Product> products = new ArrayList<>();
+    private String parentStoreId;
+    private String parentStoreName;
 
     private List<StoreBranchResponse> storeBranches = new ArrayList<>();
 

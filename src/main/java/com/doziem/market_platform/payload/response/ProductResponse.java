@@ -1,5 +1,6 @@
 package com.doziem.market_platform.payload.response;
 
+import com.doziem.market_platform.payload.response.StoreResponse;
 import lombok.Builder;
 import lombok.Data;
 

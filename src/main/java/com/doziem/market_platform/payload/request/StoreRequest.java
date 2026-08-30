@@ -1,6 +1,7 @@
 package com.doziem.market_platform.payload.request;
 
 import com.doziem.market_platform.enums.StoreStatus;
+import com.doziem.market_platform.enums.StoreType;
 import com.doziem.market_platform.payload.dto.UserDto;
 import com.doziem.market_platform.payload.dto.WorkHourDto;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +19,7 @@ public class StoreRequest {
     @Size(min = 3, max = 100)
     private String storeName;
 
-    private String storeType;
+    private StoreType storeType;
 
     private StoreStatus status;
 
@@ -51,6 +52,8 @@ public class StoreRequest {
     private String iso;
 
     private boolean isHeadQuarter ;
+
+    private String parentStoreId;
 
     private WorkHourDto weekday;
     private WorkHourDto saturday;

@@ -1,7 +1,7 @@
 package com.doziem.market_platform.payload.request;
 
 import com.doziem.market_platform.model.Product;
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,7 +23,7 @@ public class SupplyRequest {
     private Long requestId;
 
     @ManyToOne
-    private StoreBranch branch;
+    private Store branch;
 
     @ManyToOne
     private Product product;

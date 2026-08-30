@@ -1,7 +1,6 @@
 package com.doziem.market_platform.payload.dto;
 
 import com.doziem.market_platform.model.CentralWarehouse;
-import com.doziem.market_platform.model.StoreBranch;
 import lombok.Builder;
 import lombok.Data;
 

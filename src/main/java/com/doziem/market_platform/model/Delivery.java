@@ -25,7 +25,7 @@ public class Delivery {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id")
-    private StoreBranch branch;
+    private Store branch;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "logistic_id")
