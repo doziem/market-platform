@@ -2,9 +2,7 @@ package com.doziem.market_platform.mapper;
 
 import com.doziem.market_platform.model.CentralWarehouse;
 import com.doziem.market_platform.model.Store;
-import com.doziem.market_platform.model.StoreBranch;
 import com.doziem.market_platform.payload.dto.CentralWarehouseDto;
-import com.doziem.market_platform.payload.request.StoreBranchRequest;
 import com.doziem.market_platform.payload.response.CentralWarehouseResponse;
 import org.springframework.stereotype.Component;
 

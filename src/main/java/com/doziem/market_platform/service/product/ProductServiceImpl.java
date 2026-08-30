@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return ProductMapper.toResponseList(productRepository.findAll());
+        return ProductMapper.toDetailedResponseList(productRepository.findAll());
     }
 
     @Override
@@ -167,7 +167,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        // All items validated.  stock deductions and transfers.
+        // All items validated. stock deductions and transfers.
         for (StateReplenishmentItem item : request.getItems()) {
 
             Product product = validateProductAndStockQuantity(item, stateWarehouse);
@@ -189,23 +189,15 @@ public class ProductServiceImpl implements ProductService {
         Product product = item.getProduct();
         int requestedQty = item.getRequestedQuantity();
 
-        // Deduct from Central Warehouse stock
         product.setQuantityInStock(product.getQuantityInStock() - requestedQty);
-
-        // Move product to State Warehouse if not already assigned
-        product.setStateWarehouse(stateWarehouse);
-
-        // If the central warehouse stock reaches zero → remove reference
-        if (product.getQuantityInStock() < 1) {
-
-        }
+        stateWarehouse.addProduct(product);
         return product;
     }
 
 
     private Product validateProduct(Product product, ProductRequest request) {
 
-        if (product.getImages().size() < 4) {
+        if (request.getImages() == null || request.getImages().size() < 4) {
             throw new CustomException("Product must have at least 4 images");
         }
 
@@ -224,6 +216,11 @@ public class ProductServiceImpl implements ProductService {
         }
 
         product.setImages(imageList);
+        if (product.getCentralWarehouse() == null) {
+            throw new CustomException("Central warehouse is required");
+        }
+
+        product.getCentralWarehouse().addProduct(product);
 
         return product;
     }

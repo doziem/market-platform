@@ -1,7 +1,6 @@
 package com.doziem.market_platform.model.staff;
 
 import com.doziem.market_platform.model.Store;
-import com.doziem.market_platform.model.StoreBranch;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,11 +28,11 @@ public class StaffTransferHistory {
 
     @ManyToOne (fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private StoreBranch fromBranch;
+    private Store fromBranch;
 
     @ManyToOne (fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private StoreBranch toBranch;
+    private Store toBranch;
 
     private ZonedDateTime transferDate;
 

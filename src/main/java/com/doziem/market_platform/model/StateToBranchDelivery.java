@@ -2,7 +2,11 @@ package com.doziem.market_platform.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Setter
@@ -10,11 +14,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StateToBranchDelivery extends BaseDelivery{
+public class StateToBranchDelivery extends BaseDelivery {
 
     @ManyToOne
     private StateWarehouse stateWarehouse;
 
     @ManyToOne
-    private StoreBranch branch;
+    private Store branch;
 }

@@ -1,7 +1,7 @@
 package com.doziem.market_platform.mapper;
 
+import com.doziem.market_platform.enums.StoreType;
 import com.doziem.market_platform.model.Store;
-import com.doziem.market_platform.model.StoreBranch;
 import com.doziem.market_platform.model.WorkHour;
 import com.doziem.market_platform.payload.dto.WorkHourDto;
 import com.doziem.market_platform.payload.request.StoreBranchRequest;
@@ -11,33 +11,40 @@ import org.springframework.stereotype.Component;
 @Component
 public class StoreBranchMapper {
 
-    public StoreBranch toEntity(StoreBranchRequest dto, Store store) {
-        return StoreBranch.builder()
-                .branchName(dto.branchName())
+    public Store toEntity(StoreBranchRequest dto, Store parentStore) {
+        return Store.builder()
+                .storeName(dto.branchName())
                 .address(dto.address())
                 .city(dto.city())
                 .state(dto.state())
                 .country(dto.country())
                 .phoneNumber(dto.phoneNumber())
+                .isHeadQuarter(false)
                 .mainBranch(dto.mainBranch())
-                .store(store)
+                .storeType(StoreType.BRANCH)
+                .parentStore(parentStore)
                 .weekday(toWorkHourEntity(dto.weekday()))
                 .saturday(toWorkHourEntity(dto.saturday()))
                 .sunday(toWorkHourEntity(dto.sunday()))
                 .build();
     }
 
-    public static   StoreBranchResponse toResponse(StoreBranch branch) {
-        if (branch == null) return null;
-        String storeId = branch.getStore() != null ? branch.getStore().getStoreId() : null;
-        String storeName = branch.getStore() != null ? branch.getStore().getStoreName() : null;
-        return  StoreBranchResponse.builder()
-                .branchId(branch.getBranchId())
-                .branchName(branch.getBranchName())
+    public static StoreBranchResponse toResponse(Store branch) {
+        if (branch == null) {
+            return null;
+        }
+
+        String storeId = branch.getParentStore() != null ? branch.getParentStore().getStoreId() : null;
+        String storeName = branch.getParentStore() != null ? branch.getParentStore().getStoreName() : null;
+
+        return StoreBranchResponse.builder()
+                .branchId(branch.getStoreId())
+                .branchName(branch.getStoreName())
                 .address(branch.getAddress())
                 .city(branch.getCity())
                 .state(branch.getState())
                 .country(branch.getCountry())
+                .phoneNumber(branch.getPhoneNumber())
                 .mainBranch(branch.isMainBranch())
                 .storeId(storeId)
                 .storeName(storeName)
@@ -47,7 +54,6 @@ public class StoreBranchMapper {
                 .build();
     }
 
-    // Convert WorkHour to WorkHourDto
     private static WorkHourDto toWorkHourDto(WorkHour workHour) {
         if (workHour == null || workHour.getOpenTime() == null || workHour.getCloseTime() == null) {
             return null;
@@ -59,11 +65,11 @@ public class StoreBranchMapper {
                 .build();
     }
 
-    // Convert WorkHourDto to WorkHour
     private static WorkHour toWorkHourEntity(WorkHourDto dto) {
         if (dto == null || dto.getOpenTime() == null || dto.getCloseTime() == null) {
             return null;
         }
+
         return WorkHour.builder()
                 .openTime(dto.getOpenTime())
                 .closeTime(dto.getCloseTime())

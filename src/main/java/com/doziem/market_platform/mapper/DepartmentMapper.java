@@ -1,6 +1,6 @@
 package com.doziem.market_platform.mapper;
 
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.model.staff.Department;
 import com.doziem.market_platform.model.staff.HumanResource;
 import com.doziem.market_platform.model.staff.Staff;
@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class DepartmentMapper {
 
-    public static Department toEntity(DepartmentDto dto, HumanResource hr, StoreBranch branch, List<Staff> staffList){
+    public static Department toEntity(DepartmentDto dto, HumanResource hr, Store branch, List<Staff> staffList){
         return Department.builder()
                 .departmentName(dto.getDepartmentName())
                 .humanResource(hr)
@@ -34,7 +34,7 @@ public class DepartmentMapper {
                 .departmentId(dept.getDepartmentId())
                 .departmentName(dept.getDepartmentName())
                 .humanResourceId(dept.getHumanResource().getHumanResourceId())
-                .branchId(dept.getBranch().getBranchId())
+                .branchId(dept.getBranch().getStoreId())
                 .staff(staffIds)
                 .description(dept.getDescription())
                 .build();

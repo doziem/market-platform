@@ -4,7 +4,7 @@ import com.doziem.market_platform.enums.EmploymentStatus;
 import com.doziem.market_platform.enums.Role;
 import com.doziem.market_platform.exception.CustomException;
 import com.doziem.market_platform.mapper.StaffMapper;
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import com.doziem.market_platform.model.User;
 import com.doziem.market_platform.model.staff.Department;
 import com.doziem.market_platform.model.staff.Staff;
@@ -12,7 +12,7 @@ import com.doziem.market_platform.payload.request.StaffRequest;
 import com.doziem.market_platform.payload.response.StaffResponse;
 import com.doziem.market_platform.repository.DepartmentRepository;
 import com.doziem.market_platform.repository.StaffRepository;
-import com.doziem.market_platform.repository.StoreBranchRepository;
+import com.doziem.market_platform.repository.StoreRepository;
 import com.doziem.market_platform.repository.UserRepository;
 import com.doziem.market_platform.system.Result;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class StaffServiceImpl implements StaffService{
     private static final Logger log = LoggerFactory.getLogger(StaffServiceImpl.class);
     private final StaffRepository staffRepository;
     private final DepartmentRepository departmentRepository;
-    private final StoreBranchRepository branchRepository;
+    private final StoreRepository branchRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -44,7 +44,7 @@ public class StaffServiceImpl implements StaffService{
 
         Department department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new RuntimeException("Department not found"));
-        StoreBranch branch = branchRepository.findById(request.getBranchId())
+        Store branch = branchRepository.findById(request.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
 
 //        if(!user.getRole().equals(Role.HR_ADMIN)){
@@ -84,7 +84,7 @@ public class StaffServiceImpl implements StaffService{
         }
 
         if (request.getBranchId() != null) {
-            StoreBranch branch = branchRepository.findById(request.getBranchId())
+            Store branch = branchRepository.findById(request.getBranchId())
                     .orElseThrow(() -> new CustomException("Branch not found"));
             staff.setBranch(branch);
         }

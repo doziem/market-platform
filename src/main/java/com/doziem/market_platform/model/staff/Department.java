@@ -1,6 +1,6 @@
 package com.doziem.market_platform.model.staff;
 
-import com.doziem.market_platform.model.StoreBranch;
+import com.doziem.market_platform.model.Store;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,7 +35,7 @@ public class Department {
     @ManyToOne
     @JoinColumn(name = "branch_id")
     @NotNull(message = "Branch is required")
-    private StoreBranch branch;
+    private Store branch;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
