@@ -21,9 +21,10 @@ public class DeliveryTracking {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "delivery_id")
     private BaseDelivery delivery;
-    @NotBlank(message = "Latitude is required")
 
+    @NotBlank(message = "Latitude is required")
     private String latitude;
+
     @NotBlank(message = "Longitude is required")
     private String longitude;
 

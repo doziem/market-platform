@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class StateReplenishmentMapper {
 
     public static StateReplenishmentRequest toEntity(StateReplenishmentRequestDto dto) {
-        //  Build the request without items
+        // Build the request without items
         StateReplenishmentRequest request = StateReplenishmentRequest.builder()
                 .stateWarehouse(
                         StateWarehouse.builder()
@@ -38,9 +38,7 @@ public class StateReplenishmentMapper {
 
                     // Build wrapper
                     StateReplenishmentItemCreate wrapper = StateReplenishmentItemCreate.builder()
-                            .dto(itemDto)
-                            .product(
-                                    Product.builder()
+                            .dto(itemDto).product(Product.builder()
                                             .productId(itemDto.getProductId())
                                             .build()
                             )
@@ -52,7 +50,7 @@ public class StateReplenishmentMapper {
                 })
                 .collect(Collectors.toList());
 
-        // Step 3 — Set items into parent (to maintain bidirectional consistency)
+        //Set items into parent (to maintain bidirectional consistency)
         request.setItems(items);
 
         return request;
@@ -67,6 +65,7 @@ public class StateReplenishmentMapper {
                 .status(request.getStatus())
                 .requestedBy(request.getRequestedBy())
                 .approvedBy(request.getApprovedBy())
+                .approvedByPosition(request.getApprovedByPosition())
                 .requestDate(request.getRequestDate())
                 .approvedDate(request.getApprovedDate())
                 .fulfilledDate(request.getFulfilledDate())

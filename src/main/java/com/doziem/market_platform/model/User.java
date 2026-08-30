@@ -1,6 +1,7 @@
 package com.doziem.market_platform.model;
 
 import com.doziem.market_platform.enums.Role;
+import com.doziem.market_platform.model.staff.Staff;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -47,6 +48,9 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Store> stores = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Staff staff;
 
     @Column(nullable = false)
     private ZonedDateTime createdAt;

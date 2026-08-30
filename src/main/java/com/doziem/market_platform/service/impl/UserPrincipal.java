@@ -1,6 +1,7 @@
 package com.doziem.market_platform.service.impl;
 
 import com.doziem.market_platform.model.User;
+import com.doziem.market_platform.model.staff.Staff;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,10 @@ public class UserPrincipal implements UserDetails {
     public UserPrincipal(User user, Collection<? extends GrantedAuthority> authorities) {
         this.user = user;
         this.authorities = authorities;
+    }
+
+    public Staff getStaff() {
+        return user.getStaff();
     }
 
     @Override

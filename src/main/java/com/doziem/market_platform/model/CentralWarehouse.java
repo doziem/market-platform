@@ -1,10 +1,10 @@
 package com.doziem.market_platform.model;
 
-import com.doziem.market_platform.enums.WarehouseType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,10 +30,20 @@ public class CentralWarehouse {
     @NotBlank(message = "Country is required")
     private String country;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
     @OneToMany(mappedBy = "centralWarehouse", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Product> product;
+    private List<Product> products = new ArrayList<>();;
+
+    public void addProduct(Product product) {
+        products.add(product);
+        product.setCentralWarehouse(this);
+    }
+
+    public void removeProduct(Product product) {
+        products.remove(product);
+        product.setCentralWarehouse(null);
+    }
 }

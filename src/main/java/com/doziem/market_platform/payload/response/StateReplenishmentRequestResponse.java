@@ -18,7 +18,7 @@ public class StateReplenishmentRequestResponse {
     private RequestStatus status;
     private String requestedBy;
     private String approvedBy;
-
+    private String approvedByPosition;
     private ZonedDateTime requestDate;
     private ZonedDateTime approvedDate;
     private ZonedDateTime fulfilledDate;

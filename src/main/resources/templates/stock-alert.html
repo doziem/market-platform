@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .critical { color: red; }
+        .high { color: orange; }
+    </style>
+</head>
+<body>
+<h2 th:text="'Stock Alert - ' + ${notification.severity}"
+    th:class="${notification.severity.toLowerCase()}"></h2>
+
+<p><b>Product:</b> <span th:text="${notification.productName}"></span></p>
+<p><b>Type:</b> <span th:text="${notification.type}"></span></p>
+<p><b>Message:</b> <span th:text="${notification.message}"></span></p>
+<p><b>Department:</b> <span th:text="${notification.department.getDepartmentName}"></span></p>
+<p><b>Time:</b> <span th:text="${notification.createdAt}"></span></p>
+
+<hr/>
+<p>Please take immediate action.</p>
+</body>
+</html>

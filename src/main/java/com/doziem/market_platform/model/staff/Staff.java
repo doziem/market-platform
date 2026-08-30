@@ -38,10 +38,9 @@ public class Staff {
 
     private boolean active;
 
-    @OneToOne(optional = false,  fetch = FetchType.LAZY)
+    @OneToOne(optional = false,  fetch = FetchType.EAGER)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @NotNull(message = "User is required")
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

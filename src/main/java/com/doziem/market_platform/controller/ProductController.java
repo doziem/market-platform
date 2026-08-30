@@ -1,9 +1,11 @@
 package com.doziem.market_platform.controller;
 
+import com.doziem.market_platform.model.Product;
 import com.doziem.market_platform.payload.request.ProductRequest;
 import com.doziem.market_platform.payload.request.UpdateProduct;
 import com.doziem.market_platform.payload.response.ProductResponse;
 import com.doziem.market_platform.service.product.ProductService;
+import com.doziem.market_platform.system.Result;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -45,5 +47,11 @@ public class ProductController {
     public ResponseEntity<String> delete(@PathVariable String id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok("Product deleted successfully");
+    }
+
+    @PostMapping("/central-warehouse/{warehouseId}/products")
+    public ResponseEntity<Result> addProductsToWarehouse(@PathVariable String warehouseId, @RequestBody List<String> productIds){
+        Result products = productService.assignProductsToCentralWarehouse(warehouseId,productIds);
+        return   ResponseEntity.ok(products);
     }
 }

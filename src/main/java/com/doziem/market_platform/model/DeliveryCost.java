@@ -1,7 +1,8 @@
 package com.doziem.market_platform.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 @Entity
@@ -14,24 +15,29 @@ public class DeliveryCost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String  deliveryCostId;
+    private String deliveryCostId;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "delivery_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_id", nullable = false)
     private BaseDelivery delivery;
 
-    @NotBlank(message = "Fuel cost is required")
+    @NotNull(message = "Fuel cost is required")
+    @PositiveOrZero
     private double fuelCost;
 
-    @NotBlank(message = "Labor cost is required")
+    @NotNull(message = "Labor cost is required")
+    @PositiveOrZero
     private double laborCost;
 
-    @NotBlank(message = "tollFee cost is required")
+    @NotNull(message = "Toll fees cost is required")
+    @PositiveOrZero
     private double tollFees;
 
-    @NotBlank(message = "Other Expenses is required")
+    @NotNull(message = "Other expenses is required")
+    @PositiveOrZero
     private double otherExpenses;
 
-    @NotBlank(message = "Total cost is required")
+    @NotNull(message = "Total cost is required")
+    @PositiveOrZero
     private double totalCost;
 }
