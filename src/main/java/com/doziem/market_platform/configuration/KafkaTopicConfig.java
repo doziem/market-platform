@@ -12,9 +12,20 @@ public class KafkaTopicConfig {
     @Value("${kafka.topic.product-notification:product-notification}")
     private String productTopic;
 
+    @Value("${kafka.topic.verification-email:verification-email-topic}")
+    private String verificationEmailTopic;
+
     @Bean
     public NewTopic productTopic() {
         return TopicBuilder.name(productTopic)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic verificationEmailTopic() {
+        return TopicBuilder.name(verificationEmailTopic)
                 .partitions(3)
                 .replicas(1)
                 .build();

@@ -1,6 +1,7 @@
 package com.doziem.market_platform.service.email;
 
 import com.doziem.market_platform.payload.dto.ProductNotification;
+import com.doziem.market_platform.payload.dto.VerificationEmailMessage;
 import com.doziem.market_platform.model.User;
 import com.doziem.market_platform.service.DepartmentAlertRecipientService;
 import jakarta.mail.MessagingException;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -32,10 +34,13 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
     private final DepartmentAlertRecipientService recipientService;
-    private final KafkaTemplate<String, ProductNotification> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${alert.email.from}")
     private String fromEmail;
+
+    @Value("${kafka.topic.verification-email:verification-email-topic}")
+    private String verificationEmailTopic;
 
     @Retryable(
             retryFor = Exception.class,
@@ -58,24 +63,38 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendVerificationEmail(User user, String verificationLink) {
+        VerificationEmailMessage message = VerificationEmailMessage.builder()
+                .email(user.getEmail())
+                .displayName(user.getDisplayName())
+                .verificationLink(verificationLink)
+                .build();
+        kafkaTemplate.send(verificationEmailTopic, user.getEmail(), message);
+    }
+
+    @KafkaListener(
+            topics = "${kafka.topic.verification-email:verification-email-topic}",
+            groupId = "${spring.kafka.consumer.group-id:market-platform-group}",
+            concurrency = "1"
+    )
+    public void consumeVerificationEmail(VerificationEmailMessage message) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
             helper.setFrom(fromEmail);
-            helper.setTo(user.getEmail());
+            helper.setTo(message.getEmail());
             helper.setSubject("Verify your email address");
 
             Context context = new Context();
-            context.setVariable("user", user);
-            context.setVariable("verificationLink", verificationLink);
+            context.setVariable("displayName", message.getDisplayName());
+            context.setVariable("verificationLink", message.getVerificationLink());
 
             String html = templateEngine.process("email-verification.html", context);
             helper.setText(html, true);
 
-            mailSender.send(message);
+            mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            log.error("Failed to send verification email to {}: {}", user.getEmail(), e.getMessage(), e);
+            log.error("Failed to send verification email to {}: {}", message.getEmail(), e.getMessage(), e);
             throw new RuntimeException("Verification email send failed", e);
         }
     }
