@@ -60,6 +60,10 @@ public class JwtValidator extends OncePerRequestFilter {
                 User user = userRepository.findByEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+                if (Boolean.FALSE.equals(user.getActive())) {
+                    throw new BadCredentialsException("User account is deactivated");
+                }
+
                 UserPrincipal userPrincipal = new UserPrincipal(user, auth);
 
                  Authentication authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, auth);

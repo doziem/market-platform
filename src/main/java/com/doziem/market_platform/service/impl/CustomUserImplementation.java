@@ -29,6 +29,14 @@ public class CustomUserImplementation implements UserDetailsService {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().toString());
         Collection<GrantedAuthority> authorities = Collections.singletonList(authority);
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(),user.getPassword(),authorities);
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                !Boolean.FALSE.equals(user.getActive()),
+                true,
+                true,
+                true,
+                authorities
+        );
     }
 }

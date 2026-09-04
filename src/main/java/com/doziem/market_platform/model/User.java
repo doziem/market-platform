@@ -5,7 +5,6 @@ import com.doziem.market_platform.model.staff.Staff;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -45,6 +44,14 @@ public class User {
     private Role role;
 
     private boolean isVerify;
+
+    @Builder.Default
+    private Boolean active = true;
+
+    @Column(unique = true)
+    private String emailVerificationToken;
+
+    private ZonedDateTime emailVerificationTokenExpiry;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Store> stores = new ArrayList<>();

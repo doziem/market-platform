@@ -1,6 +1,7 @@
 package com.doziem.market_platform.service.email;
 
 import com.doziem.market_platform.payload.dto.ProductNotification;
+import com.doziem.market_platform.model.User;
 import com.doziem.market_platform.service.DepartmentAlertRecipientService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -52,6 +53,30 @@ public class EmailServiceImpl implements EmailService {
 
         for (String to : recipients) {
             sendHtmlEmail(to, html, notification.getSeverity());
+        }
+    }
+
+    @Override
+    public void sendVerificationEmail(User user, String verificationLink) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(user.getEmail());
+            helper.setSubject("Verify your email address");
+
+            Context context = new Context();
+            context.setVariable("user", user);
+            context.setVariable("verificationLink", verificationLink);
+
+            String html = templateEngine.process("email-verification.html", context);
+            helper.setText(html, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            log.error("Failed to send verification email to {}: {}", user.getEmail(), e.getMessage(), e);
+            throw new RuntimeException("Verification email send failed", e);
         }
     }
 

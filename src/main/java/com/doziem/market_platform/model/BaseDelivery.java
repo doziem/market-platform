@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.ZonedDateTime;
 
@@ -37,6 +35,6 @@ public abstract class BaseDelivery {
     @JoinColumn(name = "logistics_id")
     private LogisticsCompany logisticsCompany;
 
-    @OneToOne(mappedBy = "delivery", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "delivery", cascade = CascadeType.ALL)
     private DeliveryCost cost;
 }

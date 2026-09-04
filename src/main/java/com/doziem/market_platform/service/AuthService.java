@@ -6,4 +6,6 @@ import com.doziem.market_platform.system.Result;
 public interface AuthService {
     Result signup(UserDto userDto);
     Result login(UserDto userDto);
+    Result verifyEmail(String token);
+
 }

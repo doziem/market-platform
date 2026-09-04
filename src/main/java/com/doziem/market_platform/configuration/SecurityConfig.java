@@ -36,6 +36,7 @@ public class SecurityConfig {
         return   http
                 .sessionManagement(session ->  session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/v1/**").authenticated()
                         .requestMatchers("/api/v1/super-admin**")
                         .hasRole("ADMIN")
@@ -60,7 +61,7 @@ public class SecurityConfig {
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
-                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
                 config.setAllowCredentials(true);
                 config.setExposedHeaders(List.of("Authorization"));
