@@ -48,7 +48,8 @@ public class LogisticsCompanyMapper {
         return entity;
     }
     public static List<LogisticsCompanyResponse> toResponseList(List<LogisticsCompany> companies) {
-        return companies.stream()
+        return companies
+                .stream()
                 .map(LogisticsCompanyMapper::toResponse)
                 .collect(Collectors.toList());
     }

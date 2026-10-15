@@ -65,12 +65,15 @@ public class LogisticsCompanyServiceImpl implements LogisticsCompanyService {
 
     @Override
     public List<LogisticsCompanyResponse> getAll() {
-        return LogisticsCompanyMapper.toResponseList(logisticsCompanyRepository.findAll());
+        return LogisticsCompanyMapper
+                .toResponseList(logisticsCompanyRepository.findAll());
     }
 
     @Override
     public void delete(String logisticsId) {
-        LogisticsCompany logisticsCompany = logisticsCompanyRepository.findById(logisticsId).orElseThrow(
+        LogisticsCompany logisticsCompany = logisticsCompanyRepository
+                .findById(logisticsId)
+                .orElseThrow(
                 () -> new ResourceNotFoundException("Logistics Company not found")
         );
 

@@ -4,33 +4,72 @@ import com.doziem.market_platform.model.Category;
 import com.doziem.market_platform.model.CentralWarehouse;
 import com.doziem.market_platform.model.Product;
 import com.doziem.market_platform.model.ProductImage;
-import com.doziem.market_platform.model.Store;
+import com.doziem.market_platform.model.ProductVariant;
 import com.doziem.market_platform.payload.request.ProductRequest;
 import com.doziem.market_platform.payload.request.UpdateProduct;
+import com.doziem.market_platform.payload.response.CategoryResponse;
 import com.doziem.market_platform.payload.response.ProductResponse;
+import com.doziem.market_platform.payload.response.ProductVariantResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class ProductMapper {
 
     public static Product toEntity(ProductRequest dto, Category category, CentralWarehouse centralWarehouse) {
-        return Product.builder()
-                .productName(dto.getProductName())
-                .sku(dto.getSku())
-                .description(dto.getDescription())
-                .mrp(dto.getMrp())
-                .sellingPrice(dto.getSellingPrice())
-                .unitPrice(dto.getUnitPrice())
-                .quantityInStock(dto.getQuantityInStock())
-                .reorderLevel(dto.getReorderLevel())
+        var variants = dto.getVariants();
+        var primaryVariant = variants == null || variants.isEmpty() ? null : variants.get(0);
+        if (primaryVariant == null && dto.getSellingPrice() == null) {
+            throw new IllegalArgumentException("Selling price is required when the product has no variants");
+        }
+        if (primaryVariant != null && primaryVariant.getSellingPrice() == null) {
+            throw new IllegalArgumentException("The first product variant must include a selling price");
+        }
+        double sellingPrice = primaryVariant == null
+                ? dto.getSellingPrice().doubleValue()
+                : primaryVariant.getSellingPrice().doubleValue();
+        var costPrice = primaryVariant == null ? dto.getCostPrice() : primaryVariant.getCostPrice();
+        var mrp = primaryVariant == null ? dto.getMrp() : primaryVariant.getMrp();
+        Product product = Product.builder()
+                .productName(dto.getProductName().trim())
+                .sku(primaryVariant == null
+                        ? "PROD-" + UUID.randomUUID()
+                        : primaryVariant.getSku().trim())
+                .description(dto.getDescription().trim())
+                .mrp(mrp == null ? null : mrp.doubleValue())
+                .sellingPrice(sellingPrice)
+                .unitPrice(costPrice == null
+                        ? sellingPrice
+                        : costPrice.doubleValue())
+                .quantityInStock(dto.getQuantityInStock() == null ? 0 : dto.getQuantityInStock())
+                .reorderLevel(dto.getReorderLevel() == null ? 0 : dto.getReorderLevel())
                 .category(category)
                 .centralWarehouse(centralWarehouse)
                 .stateWarehouse(null)
                 .store(null)
                 .build();
+
+        if (variants == null) {
+            return product;
+        }
+        for (var variantRequest : variants) {
+            if (variantRequest == null) {
+                throw new IllegalArgumentException("Product variant cannot be null");
+            }
+            product.addVariant(ProductVariant.builder()
+                    .sku(variantRequest.getSku().trim())
+                    .color(variantRequest.getColor().trim())
+                    .size(variantRequest.getSize().trim())
+                    .sellingPrice(variantRequest.getSellingPrice())
+                    .costPrice(variantRequest.getCostPrice())
+                    .mrp(variantRequest.getMrp())
+                    .active(true)
+                    .build());
+        }
+        return product;
     }
 
     public static ProductResponse toResponse(Product product) {
@@ -42,8 +81,9 @@ public class ProductMapper {
             return new ArrayList<>();
         }
 
-        return products.stream()
-                .map(product -> buildResponse(product, false))
+        return products
+                .stream()
+                .map(ProductMapper::toResponse)
                 .toList();
     }
 
@@ -83,17 +123,34 @@ public class ProductMapper {
                 .productId(product.getProductId())
                 .productName(product.getProductName())
                 .description(product.getDescription())
-                .sellingPrice(product.getSellingPrice())
-                .quantityInStock(product.getQuantityInStock())
-                .mrp(product.getMrp())
                 .sku(product.getSku())
+                .sellingPrice(product.getSellingPrice())
+                .unitPrice(product.getUnitPrice())
+                .mrp(product.getMrp())
+                .quantityInStock(product.getQuantityInStock())
                 .brand(product.getBrand())
                 .images(product.getImages() != null ? product.getImages().stream().map(ProductImage::getImageUrl).toList() : List.of())
-                .unitPrice(product.getUnitPrice())
                 .reorderLevel(product.getReorderLevel())
+                .variants(product.getVariants() == null ? List.of() : product.getVariants().stream()
+                        .map(variant -> ProductVariantResponse.builder()
+                                .variantId(variant.getVariantId())
+                                .sku(variant.getSku())
+                                .color(variant.getColor())
+                                .size(variant.getSize())
+                                .sellingPrice(variant.getSellingPrice())
+                                .costPrice(variant.getCostPrice())
+                                .mrp(variant.getMrp())
+                                .active(variant.getActive())
+                                .build())
+                        .toList())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
-                .category(includeRelations ? CategoryMapper.toResponse(product.getCategory()) : null)
+                .category(includeRelations && product.getCategory() != null
+                        ? CategoryResponse.builder()
+                                .categoryId(product.getCategory().getCategoryId())
+                                .categoryName(product.getCategory().getCategoryName())
+                                .build()
+                        : null)
                 .centralWarehouse(includeRelations ? CentralWarehouseMapper.toResponse(product.getCentralWarehouse()) : null)
                 .stateWarehouse(includeRelations ? StateWarehouseMapper.toResponse(product.getStateWarehouse()) : null)
                 .store(includeRelations ? StoreMapper.storeResponse(product.getStore()) : null)

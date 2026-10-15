@@ -8,6 +8,5 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = "productTopic", groupId = "market-platform-group")
     public void consumeProductCreation(String message){
-
     }
 }

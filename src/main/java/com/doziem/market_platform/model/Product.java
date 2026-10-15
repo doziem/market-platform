@@ -56,6 +56,10 @@ public class Product {
 
     private ZonedDateTime updatedAt;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ProductVariant> variants = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = ZonedDateTime.now();
@@ -86,5 +90,23 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", referencedColumnName = "storeId", nullable = true)
     private Store store;
+
+    public void addVariant(ProductVariant variant) {
+        if (variant == null) {
+            return;
+        }
+
+        variants.add(variant);
+        variant.setProduct(this);
+    }
+
+    public void removeVariant(ProductVariant variant) {
+        if (variant == null) {
+            return;
+        }
+
+        variants.remove(variant);
+        variant.setProduct(null);
+    }
 
 }

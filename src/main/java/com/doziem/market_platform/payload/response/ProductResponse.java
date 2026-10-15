@@ -1,6 +1,5 @@
 package com.doziem.market_platform.payload.response;
 
-import com.doziem.market_platform.payload.response.StoreResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,18 +9,17 @@ import java.util.List;
 @Data
 @Builder
 public class ProductResponse {
-
     private String productId;
-
     private String productName;
-    private String sku;
     private String description;
-
-    private Double mrp;
-    private Double sellingPrice;
     private String brand;
-    List<String> images;
-    private double unitPrice;
+    private String sku;
+    private Double sellingPrice;
+    private Double unitPrice;
+    private Double mrp;
+    private List<ProductVariantResponse> variants;
+
+    private List<String> images;
     private int quantityInStock;
     private int reorderLevel;
 

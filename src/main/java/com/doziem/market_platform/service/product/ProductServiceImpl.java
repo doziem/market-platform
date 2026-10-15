@@ -6,6 +6,7 @@ import com.doziem.market_platform.exception.ResourceNotFoundException;
 import com.doziem.market_platform.mapper.ProductMapper;
 import com.doziem.market_platform.model.*;
 import com.doziem.market_platform.payload.request.ProductRequest;
+import com.doziem.market_platform.payload.request.ProductVariantRequest;
 import com.doziem.market_platform.payload.request.UpdateProduct;
 import com.doziem.market_platform.payload.response.ProductResponse;
 import com.doziem.market_platform.repository.*;
@@ -20,9 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +33,8 @@ public class ProductServiceImpl implements ProductService {
     private final CentralWarehouseRepository centralWarehouseRepository;
     private final CloudinaryService cloudinaryService;
     private final StateReplenishmentRequestRepository requestRepository;
+    private final StoreRepository storeRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
@@ -51,6 +52,114 @@ public class ProductServiceImpl implements ProductService {
 
         return ProductMapper.toResponse(productRepository.save(savedProduct));
 
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse createProducts(ProductRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Product request cannot be null");
+        }
+
+        String categoryId = requireText(request.getCategoryId(), "Category is required");
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + categoryId));
+
+        Store store = null;
+        if (request.getStoreId() != null && !request.getStoreId().isBlank()) {
+            String storeId = request.getStoreId().trim();
+            store = storeRepository.findById(storeId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + storeId));
+        }
+
+        CentralWarehouse centralWarehouse = null;
+        if (request.getCentralWarehouseId() != null
+                && !request.getCentralWarehouseId().isBlank()) {
+            String warehouseId = request.getCentralWarehouseId().trim();
+            centralWarehouse = centralWarehouseRepository.findById(warehouseId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Central warehouse not found: " + warehouseId));
+        }
+
+        if (request.getImages() == null || request.getImages().size() < 4) {
+            throw new IllegalArgumentException("Product must have at least 4 images");
+        }
+        if (request.getImages().stream().anyMatch(file -> file == null || file.isEmpty())) {
+            throw new CustomException("Product images cannot be empty");
+        }
+
+        Set<String> skus = new HashSet<>();
+        Set<List<String>> colorSizes = new HashSet<>();
+        List<ProductVariantRequest> variants = request.getVariants() == null
+                ? List.of()
+                : request.getVariants();
+        for (ProductVariantRequest variant : variants) {
+            if (variant == null) {
+                throw new CustomException("Product variant cannot be null");
+            }
+
+            String sku = requireText(variant.getSku(), "Variant SKU is required");
+            if (!skus.add(sku.toLowerCase(Locale.ROOT))) {
+                throw new CustomException("Duplicate SKU in request: " + sku);
+            }
+            if (productVariantRepository.existsBySku(sku)) {
+                throw new IllegalArgumentException("SKU already exists: " + sku);
+            }
+            requireText(variant.getColor(), "Variant color is required");
+            requireText(variant.getSize(), "Variant size is required");
+            List<String> colorSize = List.of(
+                    variant.getColor().trim().toLowerCase(Locale.ROOT),
+                    variant.getSize().trim().toLowerCase(Locale.ROOT));
+            if (!colorSizes.add(colorSize)) {
+                throw new IllegalArgumentException(
+                        "Duplicate color and size combination in request: "
+                                + variant.getColor() + " / " + variant.getSize());
+            }
+            if (variant.getSellingPrice() == null || variant.getSellingPrice().signum() <= 0) {
+                throw new IllegalArgumentException("Variant selling price must be greater than zero");
+            }
+            if (variant.getCostPrice() != null && variant.getCostPrice().signum() < 0
+                    || variant.getMrp() != null && variant.getMrp().signum() < 0) {
+                throw new IllegalArgumentException("Variant cost price and MRP cannot be negative");
+            }
+        }
+
+        if (variants.isEmpty()) {
+            if (request.getSellingPrice() == null || request.getSellingPrice().signum() <= 0) {
+                throw new IllegalArgumentException(
+                        "Product selling price is required and must be greater than zero when there are no variants");
+            }
+            if (request.getCostPrice() != null && request.getCostPrice().signum() < 0
+                    || request.getMrp() != null && request.getMrp().signum() < 0) {
+                throw new IllegalArgumentException("Product cost price and MRP cannot be negative");
+            }
+        }
+
+        requireText(request.getProductName(), "Product name is required");
+        requireText(request.getDescription(), "Product description is required");
+        requireText(request.getBrand(), "Product brand is required");
+        Product product = ProductMapper.toEntity(request, category, centralWarehouse);
+        product.setStore(store);
+
+        List<ProductImage> images = new ArrayList<>();
+        for (MultipartFile file : request.getImages()) {
+            Map<String, String> upload = cloudinaryService.upload(file, "products");
+            images.add(ProductImage.builder()
+                    .imageUrl(upload.get("url"))
+                    .publicId(upload.get("publicId"))
+                    .product(product)
+                    .build());
+        }
+        product.setImages(images);
+
+        return ProductMapper.toResponse(productRepository.save(product));
+    }
+
+    private String requireText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
     }
 
     @Override
