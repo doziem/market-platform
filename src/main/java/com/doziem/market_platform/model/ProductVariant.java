@@ -46,7 +46,7 @@ public class ProductVariant {
     @Column(nullable = false, length = 50)
     private String size;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(precision = 12, scale = 2)
     private BigDecimal sellingPrice;
 
     @Column(precision = 12, scale = 2)

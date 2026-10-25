@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -37,21 +38,13 @@ public class ProductServiceImpl implements ProductService {
     private final ProductVariantRepository productVariantRepository;
 
     @Override
+    @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-        CentralWarehouse centralWarehouse = centralWarehouseRepository.findById(request.getCentralWarehouseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Central Warehouse not found"));
-
-        Product product = ProductMapper.toEntity(request,category,centralWarehouse);
-
-        Product validatedProduct = validateProduct(product,request);
-
-        Product savedProduct = productRepository.save(validatedProduct);
-
-        return ProductMapper.toResponse(productRepository.save(savedProduct));
-
+        if (request == null || request.getCentralWarehouseId() == null
+                || request.getCentralWarehouseId().isBlank()) {
+            throw new CustomException("Central warehouse is required");
+        }
+        return createProducts(request);
     }
 
     @Override
@@ -60,6 +53,8 @@ public class ProductServiceImpl implements ProductService {
         if (request == null) {
             throw new IllegalArgumentException("Product request cannot be null");
         }
+
+        validateCreateProductRequest(request);
 
         String categoryId = requireText(request.getCategoryId(), "Category is required");
         Category category = categoryRepository.findById(categoryId)
@@ -81,6 +76,20 @@ public class ProductServiceImpl implements ProductService {
                             "Central warehouse not found: " + warehouseId));
         }
 
+        Product product = ProductMapper.toEntity(request, category, centralWarehouse);
+        product.setStore(store);
+
+        product.setImages(uploadProductImages(request.getImages(), product));
+
+        return ProductMapper.toResponse(productRepository.save(product));
+    }
+
+    private void validateCreateProductRequest(ProductRequest request) {
+        requireText(request.getProductName(), "Product name is required");
+        requireText(request.getDescription(), "Product description is required");
+        requireText(request.getBrand(), "Product brand is required");
+        requireText(request.getCategoryId(), "Category is required");
+
         if (request.getImages() == null || request.getImages().size() < 4) {
             throw new IllegalArgumentException("Product must have at least 4 images");
         }
@@ -88,11 +97,16 @@ public class ProductServiceImpl implements ProductService {
             throw new CustomException("Product images cannot be empty");
         }
 
-        Set<String> skus = new HashSet<>();
-        Set<List<String>> colorSizes = new HashSet<>();
         List<ProductVariantRequest> variants = request.getVariants() == null
                 ? List.of()
                 : request.getVariants();
+        if (variants.isEmpty()) {
+            validatePrices(request.getSellingPrice(), request.getCostPrice(), request.getMrp(), "Product");
+            return;
+        }
+
+        Set<String> skus = new HashSet<>();
+        Set<List<String>> colorSizes = new HashSet<>();
         for (ProductVariantRequest variant : variants) {
             if (variant == null) {
                 throw new CustomException("Product variant cannot be null");
@@ -105,44 +119,39 @@ public class ProductServiceImpl implements ProductService {
             if (productVariantRepository.existsBySku(sku)) {
                 throw new IllegalArgumentException("SKU already exists: " + sku);
             }
-            requireText(variant.getColor(), "Variant color is required");
-            requireText(variant.getSize(), "Variant size is required");
+
+            String color = requireText(variant.getColor(), "Variant color is required");
+            String size = requireText(variant.getSize(), "Variant size is required");
             List<String> colorSize = List.of(
-                    variant.getColor().trim().toLowerCase(Locale.ROOT),
-                    variant.getSize().trim().toLowerCase(Locale.ROOT));
+                    color.toLowerCase(Locale.ROOT),
+                    size.toLowerCase(Locale.ROOT));
             if (!colorSizes.add(colorSize)) {
                 throw new IllegalArgumentException(
-                        "Duplicate color and size combination in request: "
-                                + variant.getColor() + " / " + variant.getSize());
+                        "Duplicate color and size combination in request: " + color + " / " + size);
             }
-            if (variant.getSellingPrice() == null || variant.getSellingPrice().signum() <= 0) {
-                throw new IllegalArgumentException("Variant selling price must be greater than zero");
-            }
-            if (variant.getCostPrice() != null && variant.getCostPrice().signum() < 0
-                    || variant.getMrp() != null && variant.getMrp().signum() < 0) {
-                throw new IllegalArgumentException("Variant cost price and MRP cannot be negative");
-            }
+
+            validatePrices(variant.getSellingPrice(), variant.getCostPrice(), variant.getMrp(), "Variant");
         }
+    }
 
-        if (variants.isEmpty()) {
-            if (request.getSellingPrice() == null || request.getSellingPrice().signum() <= 0) {
-                throw new IllegalArgumentException(
-                        "Product selling price is required and must be greater than zero when there are no variants");
-            }
-            if (request.getCostPrice() != null && request.getCostPrice().signum() < 0
-                    || request.getMrp() != null && request.getMrp().signum() < 0) {
-                throw new IllegalArgumentException("Product cost price and MRP cannot be negative");
-            }
+    private void validatePrices(
+            BigDecimal sellingPrice,
+            BigDecimal costPrice,
+            BigDecimal mrp,
+            String priceOwner) {
+        if (sellingPrice == null || sellingPrice.signum() <= 0) {
+            throw new IllegalArgumentException(
+                    priceOwner + " selling price is required and must be greater than zero");
         }
+        if ((costPrice != null && costPrice.signum() < 0)
+                || (mrp != null && mrp.signum() < 0)) {
+            throw new IllegalArgumentException(priceOwner + " cost price and MRP cannot be negative");
+        }
+    }
 
-        requireText(request.getProductName(), "Product name is required");
-        requireText(request.getDescription(), "Product description is required");
-        requireText(request.getBrand(), "Product brand is required");
-        Product product = ProductMapper.toEntity(request, category, centralWarehouse);
-        product.setStore(store);
-
-        List<ProductImage> images = new ArrayList<>();
-        for (MultipartFile file : request.getImages()) {
+    private List<ProductImage> uploadProductImages(List<MultipartFile> files, Product product) {
+        List<ProductImage> images = new ArrayList<>(files.size());
+        for (MultipartFile file : files) {
             Map<String, String> upload = cloudinaryService.upload(file, "products");
             images.add(ProductImage.builder()
                     .imageUrl(upload.get("url"))
@@ -150,9 +159,7 @@ public class ProductServiceImpl implements ProductService {
                     .product(product)
                     .build());
         }
-        product.setImages(images);
-
-        return ProductMapper.toResponse(productRepository.save(product));
+        return images;
     }
 
     private String requireText(String value, String message) {
@@ -304,33 +311,4 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-    private Product validateProduct(Product product, ProductRequest request) {
-
-        if (request.getImages() == null || request.getImages().size() < 4) {
-            throw new CustomException("Product must have at least 4 images");
-        }
-
-        List<ProductImage> imageList = new ArrayList<>();
-
-        for (MultipartFile file : request.getImages()) {
-
-            Map<String, String> upload = cloudinaryService.upload(file, "products");
-
-            ProductImage img = new ProductImage();
-            img.setImageUrl(upload.get("url"));
-            img.setPublicId(upload.get("publicId"));
-            img.setProduct(product);
-
-            imageList.add(img);
-        }
-
-        product.setImages(imageList);
-        if (product.getCentralWarehouse() == null) {
-            throw new CustomException("Central warehouse is required");
-        }
-
-        product.getCentralWarehouse().addProduct(product);
-
-        return product;
-    }
 }

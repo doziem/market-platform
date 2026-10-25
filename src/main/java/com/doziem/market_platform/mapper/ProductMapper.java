@@ -6,44 +6,60 @@ import com.doziem.market_platform.model.Product;
 import com.doziem.market_platform.model.ProductImage;
 import com.doziem.market_platform.model.ProductVariant;
 import com.doziem.market_platform.payload.request.ProductRequest;
+import com.doziem.market_platform.payload.request.ProductVariantRequest;
 import com.doziem.market_platform.payload.request.UpdateProduct;
 import com.doziem.market_platform.payload.response.CategoryResponse;
 import com.doziem.market_platform.payload.response.ProductResponse;
 import com.doziem.market_platform.payload.response.ProductVariantResponse;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Component
 public class ProductMapper {
 
     public static Product toEntity(ProductRequest dto, Category category, CentralWarehouse centralWarehouse) {
         var variants = dto.getVariants();
-        var primaryVariant = variants == null || variants.isEmpty() ? null : variants.get(0);
+        var primaryVariant = variants == null || variants.isEmpty() ? null : variants.getFirst();
+        if (variants != null && variants.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("Product variant cannot be null");
+        }
         if (primaryVariant == null && dto.getSellingPrice() == null) {
             throw new IllegalArgumentException("Selling price is required when the product has no variants");
         }
         if (primaryVariant != null && primaryVariant.getSellingPrice() == null) {
             throw new IllegalArgumentException("The first product variant must include a selling price");
         }
+        boolean variantSellingPrice = hasDifferentPrices(variants, ProductVariantRequest::getSellingPrice);
+        boolean variantCostPrice = hasDifferentPrices(variants, ProductVariantRequest::getCostPrice);
+        boolean variantMrp = hasDifferentPrices(variants, ProductVariantRequest::getMrp);
         double sellingPrice = primaryVariant == null
                 ? dto.getSellingPrice().doubleValue()
                 : primaryVariant.getSellingPrice().doubleValue();
         var costPrice = primaryVariant == null ? dto.getCostPrice() : primaryVariant.getCostPrice();
         var mrp = primaryVariant == null ? dto.getMrp() : primaryVariant.getMrp();
+        Double productUnitPrice = null;
+        if (!variantCostPrice) {
+            if (costPrice != null) {
+                productUnitPrice = costPrice.doubleValue();
+            } else if (primaryVariant == null || !variantSellingPrice) {
+                productUnitPrice = sellingPrice;
+            }
+        }
         Product product = Product.builder()
                 .productName(dto.getProductName().trim())
                 .sku(primaryVariant == null
                         ? "PROD-" + UUID.randomUUID()
                         : primaryVariant.getSku().trim())
                 .description(dto.getDescription().trim())
-                .mrp(mrp == null ? null : mrp.doubleValue())
-                .sellingPrice(sellingPrice)
-                .unitPrice(costPrice == null
-                        ? sellingPrice
-                        : costPrice.doubleValue())
+                .mrp(variantMrp || mrp == null ? null : mrp.doubleValue())
+                .sellingPrice(variantSellingPrice ? null : sellingPrice)
+                .unitPrice(productUnitPrice)
                 .quantityInStock(dto.getQuantityInStock() == null ? 0 : dto.getQuantityInStock())
                 .reorderLevel(dto.getReorderLevel() == null ? 0 : dto.getReorderLevel())
                 .category(category)
@@ -56,24 +72,35 @@ public class ProductMapper {
             return product;
         }
         for (var variantRequest : variants) {
-            if (variantRequest == null) {
-                throw new IllegalArgumentException("Product variant cannot be null");
-            }
             product.addVariant(ProductVariant.builder()
                     .sku(variantRequest.getSku().trim())
                     .color(variantRequest.getColor().trim())
                     .size(variantRequest.getSize().trim())
-                    .sellingPrice(variantRequest.getSellingPrice())
-                    .costPrice(variantRequest.getCostPrice())
-                    .mrp(variantRequest.getMrp())
+                    .sellingPrice(variantSellingPrice ? variantRequest.getSellingPrice() : null)
+                    .costPrice(variantCostPrice ? variantRequest.getCostPrice() : null)
+                    .mrp(variantMrp ? variantRequest.getMrp() : null)
                     .active(true)
                     .build());
         }
         return product;
     }
 
+    private static boolean hasDifferentPrices(List<ProductVariantRequest> variants, Function<ProductVariantRequest, BigDecimal> priceGetter) {
+        if (variants == null || variants.size() < 2) {
+            return false;
+        }
+        BigDecimal firstPrice = priceGetter.apply(variants.getFirst());
+        return variants.stream()
+                .skip(1)
+                .anyMatch(variant -> !samePrice(firstPrice, priceGetter.apply(variant)));
+    }
+
+    private static boolean samePrice(BigDecimal left, BigDecimal right) {
+        return left == null ? right == null : right != null && left.compareTo(right) == 0;
+    }
+
     public static ProductResponse toResponse(Product product) {
-        return buildResponse(product, true);
+        return buildResponse(product);
     }
 
     public static List<ProductResponse> toResponseList(List<Product> products) {
@@ -114,7 +141,7 @@ public class ProductMapper {
         return existingProduct;
     }
 
-    private static ProductResponse buildResponse(Product product, boolean includeRelations) {
+    private static ProductResponse buildResponse(Product product) {
         if (product == null) {
             return null;
         }
@@ -145,15 +172,15 @@ public class ProductMapper {
                         .toList())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
-                .category(includeRelations && product.getCategory() != null
+                .category(product.getCategory() != null
                         ? CategoryResponse.builder()
                                 .categoryId(product.getCategory().getCategoryId())
                                 .categoryName(product.getCategory().getCategoryName())
                                 .build()
                         : null)
-                .centralWarehouse(includeRelations ? CentralWarehouseMapper.toResponse(product.getCentralWarehouse()) : null)
-                .stateWarehouse(includeRelations ? StateWarehouseMapper.toResponse(product.getStateWarehouse()) : null)
-                .store(includeRelations ? StoreMapper.storeResponse(product.getStore()) : null)
+                .centralWarehouse(CentralWarehouseMapper.toResponse(product.getCentralWarehouse()))
+                .stateWarehouse(StateWarehouseMapper.toResponse(product.getStateWarehouse()))
+                .store(StoreMapper.storeResponse(product.getStore()))
                 .build();
     }
 }

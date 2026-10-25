@@ -36,13 +36,11 @@ public class Product {
 
     private Double mrp;
 
-    @NotNull(message = "Selling Price is required")
     private Double sellingPrice;
 
     @NotBlank(message = "Brand is required")
     private String brand;
 
-    @NotNull(message = "Unit price is required")
     private Double unitPrice;
 
     @NotNull(message = "Quantity in stock is required")
